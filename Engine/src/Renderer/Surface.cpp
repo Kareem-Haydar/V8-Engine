@@ -1,9 +1,9 @@
-#include <Renderer/Vulkan/VulkanTypes.h>
-#include <Renderer/Vulkan/Config.h>
+#include <Renderer/VulkanTypes.h>
+#include <Renderer/Config.h>
 
 #include <Core/Logger.h>
 
-void Renderer::Vulkan::Surface::Init(const Context& ctx, uint32_t windowId) {
+void Renderer::Surface::Init(const Context& ctx, uint32_t windowId) {
   SDL_Window* win = Core::windowManager.GetWindow(windowId).Get();
 
   if (!SDL_Vulkan_CreateSurface(win, ctx.instance_, &surface_)) 
@@ -13,7 +13,7 @@ void Renderer::Vulkan::Surface::Init(const Context& ctx, uint32_t windowId) {
   windowId_ = windowId;
 }
 
-Renderer::Vulkan::Surface::~Surface() {
+Renderer::Surface::~Surface() {
   if (surface_ != VK_NULL_HANDLE)
     vkDestroySurfaceKHR(instance_, surface_, nullptr);
 }

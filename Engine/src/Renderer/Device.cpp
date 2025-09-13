@@ -1,5 +1,5 @@
-#include <Renderer/Vulkan/VulkanTypes.h>
-#include <Renderer/Vulkan/Config.h>
+#include <Renderer/VulkanTypes.h>
+#include <Renderer/Config.h>
 
 #include <Core/Logger.h>
 
@@ -7,8 +7,8 @@
 #include <map>
 #include <set>
 
-Renderer::Vulkan::QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
-  Renderer::Vulkan::QueueFamilyIndices indices;
+Renderer::QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
+  Renderer::QueueFamilyIndices indices;
 
   uint32_t queueFamilyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -41,7 +41,7 @@ uint32_t RatePhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) {
   score += properties.limits.maxImageDimension2D;
   score += properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? 1000 : 0;
 
-  Renderer::Vulkan::QueueFamilyIndices indices = FindQueueFamilies(device, surface);
+  Renderer::QueueFamilyIndices indices = FindQueueFamilies(device, surface);
   if (!indices.IsComplete()) return 0;
 
   return score;
@@ -59,7 +59,7 @@ VkPhysicalDevice GetBestPhysicalDevice(VkInstance instance, VkSurfaceKHR surface
   return VK_NULL_HANDLE;
 }
 
-void Renderer::Vulkan::Device::Init(const Context& ctx, const Surface& surface, int physicalDeviceIndex) {
+void Renderer::Device::Init(const Context& ctx, const Surface& surface, int physicalDeviceIndex) {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(ctx.instance_, &deviceCount, nullptr);
 
@@ -125,7 +125,7 @@ void Renderer::Vulkan::Device::Init(const Context& ctx, const Surface& surface, 
   vkGetDeviceQueue(device_, presentQueueFamilyIndex_, 0, &presentQueue_);
 }
 
-Renderer::Vulkan::Device::~Device() {
+Renderer::Device::~Device() {
   if (device_ != VK_NULL_HANDLE)
     vkDestroyDevice(device_, nullptr);
 }

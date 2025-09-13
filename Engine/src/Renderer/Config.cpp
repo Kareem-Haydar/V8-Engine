@@ -1,15 +1,15 @@
-#include <Renderer/Vulkan/Config.h>
+#include <Renderer/Config.h>
 #include <Core/Logger.h>
 
 #include <string>
 
-int Renderer::Vulkan::Config::CHOOSE_BEST_DEVICE = -1;
-bool Renderer::Vulkan::Config::DEBUG_MODE = true;
-std::vector<const char*> Renderer::Vulkan::Config::VALIDATION_LAYERS = {
+int Renderer::Config::CHOOSE_BEST_DEVICE = -1;
+bool Renderer::Config::DEBUG_MODE = true;
+std::vector<const char*> Renderer::Config::VALIDATION_LAYERS = {
   "VK_LAYER_KHRONOS_validation"
 };
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::Vulkan::Config::DebugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::Config::DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,

@@ -1,12 +1,12 @@
-#include <Renderer/Vulkan/VulkanTypes.h>
-#include <Renderer/Vulkan/Config.h>
+#include <Renderer/VulkanTypes.h>
+#include <Renderer/Config.h>
 
 void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
   createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
   createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
   createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-  createInfo.pfnUserCallback = Renderer::Vulkan::Config::DebugCallback;
+  createInfo.pfnUserCallback = Renderer::Config::DebugCallback;
 }
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -25,7 +25,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
   }
 }
 
-void Renderer::Vulkan::Context::Init(const char* appName, uint32_t appVersion, const char* engineName, uint32_t engineVersion, uint32_t apiVersion, uint32_t windowId) {
+void Renderer::Context::Init(const char* appName, uint32_t appVersion, const char* engineName, uint32_t engineVersion, uint32_t apiVersion, uint32_t windowId) {
   if (!Core::windowManager.HasWindow(windowId)) {
     V_ERROR("Invalid window id: {}", windowId);
     return;
@@ -86,7 +86,7 @@ void Renderer::Vulkan::Context::Init(const char* appName, uint32_t appVersion, c
   }
 }
 
-Renderer::Vulkan::Context::~Context() {
+Renderer::Context::~Context() {
   if (Config::DEBUG_MODE) {
     DestroyDebugUtilsMessengerEXT(instance_, debugMessenger_, nullptr);
   }
