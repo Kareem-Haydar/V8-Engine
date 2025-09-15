@@ -1,12 +1,11 @@
 #include <Renderer/VulkanTypes.h>
-#include <Renderer/Config.h>
 
 void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
   createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
   createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
   createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-  createInfo.pfnUserCallback = Renderer::Config::DebugCallback;
+  createInfo.pfnUserCallback = Renderer::DebugCallback;
 }
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -25,7 +24,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
   }
 }
 
-void Renderer::Context::Init(const char* appName, uint32_t appVersion, const char* engineName, uint32_t engineVersion, uint32_t apiVersion, uint32_t windowId) {
+void Renderer::Context::Init(uint32_t windowId, const Core::Config& config) {
   if (!Core::windowManager.HasWindow(windowId)) {
     V_ERROR("Invalid window id: {}", windowId);
     return;
@@ -33,18 +32,11 @@ void Renderer::Context::Init(const char* appName, uint32_t appVersion, const cha
 
   VkApplicationInfo appInfo {};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pApplicationName = appName;
-  appInfo.applicationVersion = appVersion;
-  appInfo.pEngineName = engineName;
-  appInfo.engineVersion = engineVersion;
-  appInfo.apiVersion = apiVersion;
-
-  appName_ = appName;
-  engineName_ = engineName;
-  appVersion_ = appVersion;
-  engineVersion_ = engineVersion;
-  apiVersion_ = apiVersion;
-  windowId_ = windowId;
+  appInfo.pApplicationName = config.appName.c_str();
+  appInfo.applicationVersion = config.appVersion;
+  appInfo.pEngineName = config.engineName.c_str();
+  appInfo.engineVersion = config.engineVersion;
+  appInfo.apiVersion = config.apiVersion;
 
   VkInstanceCreateInfo instanceInfo {};
   instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -60,13 +52,18 @@ void Renderer::Context::Init(const char* appName, uint32_t appVersion, const cha
   std::vector<const char*> extensions(sdlExtensionCount);
   SDL_Vulkan_GetInstanceExtensions(win, &sdlExtensionCount, extensions.data());
 
-  if (Config::DEBUG_MODE) {
+  if (config.enableValidationLayers) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo {};
     PopulateDebugMessengerCreateInfo(debugCreateInfo);
 
     instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+  }
+
+  if (strcmp(PLATFORM, "macOS") == 0) {
+    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    instanceInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
   }
 
   instanceInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
@@ -76,7 +73,7 @@ void Renderer::Context::Init(const char* appName, uint32_t appVersion, const cha
     V_FATAL("Failed to create Vulkan instance");
   }
 
-  if (!Config::DEBUG_MODE) return;
+  if (!config.enableValidationLayers) return;
 
   VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo {};
   PopulateDebugMessengerCreateInfo(debugCreateInfo);
@@ -87,7 +84,7 @@ void Renderer::Context::Init(const char* appName, uint32_t appVersion, const cha
 }
 
 Renderer::Context::~Context() {
-  if (Config::DEBUG_MODE) {
+  if (DEBUG_MODE) {
     DestroyDebugUtilsMessengerEXT(instance_, debugMessenger_, nullptr);
   }
 

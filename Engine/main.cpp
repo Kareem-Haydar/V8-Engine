@@ -7,13 +7,25 @@ class MyApp : public Core::Application {
     Renderer::Context ctx;
     Renderer::Surface surface;
     Renderer::Device device;
+    Renderer::Swapchain swapchain;
+    Renderer::RenderPass renderPass;
+    Renderer::Shader vertexShader;
+    Renderer::Shader fragmentShader;
+    Renderer::Pipeline pipeline;
 
     void OnInit() override {
       V_INFO("initializing");
 
-      ctx.Init("V8-Engine", 1, "Engine", 1, VK_API_VERSION_1_3, defaultWindow_);
+      ctx.Init(defaultWindow_);
       surface.Init(ctx, defaultWindow_);
-      device.Init(ctx, surface, Renderer::Config::CHOOSE_BEST_DEVICE);
+      device.Init(ctx, surface);
+      swapchain.Init(device, surface, defaultWindow_);
+      renderPass.Init(device, swapchain);
+
+      vertexShader.Init(device, VK_SHADER_STAGE_VERTEX_BIT, "../shaders/vert.spv");
+      fragmentShader.Init(device, VK_SHADER_STAGE_FRAGMENT_BIT, "../shaders/frag.spv");
+      pipeline.Init(device, swapchain, vertexShader, fragmentShader, renderPass);
+      swapchain.GetFramebuffers(renderPass);
     }
 
     void OnShutdown() override {

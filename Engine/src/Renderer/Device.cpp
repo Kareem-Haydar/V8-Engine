@@ -1,5 +1,4 @@
 #include <Renderer/VulkanTypes.h>
-#include <Renderer/Config.h>
 
 #include <Core/Logger.h>
 
@@ -59,7 +58,7 @@ VkPhysicalDevice GetBestPhysicalDevice(VkInstance instance, VkSurfaceKHR surface
   return VK_NULL_HANDLE;
 }
 
-void Renderer::Device::Init(const Context& ctx, const Surface& surface, int physicalDeviceIndex) {
+void Renderer::Device::Init(const Context& ctx, const Surface& surface, const Core::Config& config) {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(ctx.instance_, &deviceCount, nullptr);
 
@@ -69,15 +68,15 @@ void Renderer::Device::Init(const Context& ctx, const Surface& surface, int phys
   std::vector<VkPhysicalDevice> devices(deviceCount);
   vkEnumeratePhysicalDevices(ctx.instance_, &deviceCount, devices.data());
 
-  if (physicalDeviceIndex != Config::CHOOSE_BEST_DEVICE && (physicalDeviceIndex < 0 || physicalDeviceIndex >= deviceCount)) {
-    V_ERROR("Invalid physical device index: {} out of {} devices", physicalDeviceIndex, deviceCount);
+  if (config.physicalDeviceIndex != CHOOSE_BEST_DEVICE && (config.physicalDeviceIndex < 0 || config.physicalDeviceIndex >= deviceCount)) {
+    V_ERROR("Invalid physical device index: {} out of {} devices", config.physicalDeviceIndex, deviceCount);
     return;
   }
 
-  if (physicalDeviceIndex == Config::CHOOSE_BEST_DEVICE) {
+  if (config.physicalDeviceIndex == CHOOSE_BEST_DEVICE) {
     physicalDevice_ = GetBestPhysicalDevice(ctx.instance_, surface.surface_, devices);
   } else {
-    physicalDevice_ = devices[physicalDeviceIndex];
+    physicalDevice_ = devices[config.physicalDeviceIndex];
   }
 
   if (physicalDevice_ == VK_NULL_HANDLE) 

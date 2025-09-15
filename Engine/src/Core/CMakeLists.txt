@@ -1,6 +1,7 @@
 set(SRC 
   Logger.cpp
   WindowManager.cpp
+  Config.cpp
 )
 
 add_library(Core SHARED ${SRC})

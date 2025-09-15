@@ -3,13 +3,35 @@
 
 #include <string>
 
-int Renderer::Config::CHOOSE_BEST_DEVICE = -1;
-bool Renderer::Config::DEBUG_MODE = true;
-std::vector<const char*> Renderer::Config::VALIDATION_LAYERS = {
-  "VK_LAYER_KHRONOS_validation"
+Renderer::Config Renderer::defaultConfig = {
+  .polygonMode = Renderer::Config::PolygonMode::Fill,
+  .cullMode = Renderer::Config::CullMode::CullModeNone,
+  .frontFace = Renderer::Config::FrontFace::Clockwise,
+  .depthClampEnable = false,
+  .rasterDiscardEnable = false,
+  .primitiveRestartEnable = false,
+  .lineWidth = 1.0f,
+  .sampleCount = Renderer::Config::SampleCount::SampleCountOne,
+  .sampleShadingEnable = false,
+  .minSampleShading = 0.0f,
+  .blendEnable = false,
+  .srcColorBlendFactor = Renderer::Config::BlendFactor::BlendFactorOne,
+  .dstColorBlendFactor = Renderer::Config::BlendFactor::BlendFactorZero,
+  .colorBlendOp = Renderer::Config::BlendOp::BlendOpAdd,
+  .srcAlphaBlendFactor = Renderer::Config::BlendFactor::BlendFactorOne,
+  .dstAlphaBlendFactor = Renderer::Config::BlendFactor::BlendFactorZero,
+  .alphaBlendOp = Renderer::Config::BlendOp::BlendOpAdd,
+  .dynamicStates = { Renderer::Config::DynamicState::Viewport, Renderer::Config::DynamicState::Scissor },
+  .inputTopology = Renderer::Config::InputTopology::TriangleList,
+  .validationLayers = { "VK_LAYER_KHRONOS_validation" },
+  .appName = "",
+  .appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0),
+  .engineName = "V8 Engine",
+  .engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0),
+  .apiVersion = VK_API_VERSION_1_3
 };
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::Config::DebugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,

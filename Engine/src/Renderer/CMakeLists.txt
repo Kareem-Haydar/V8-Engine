@@ -3,6 +3,9 @@ set(SRC
   Context.cpp
   Surface.cpp
   Device.cpp
+  Swapchain.cpp
+  RenderPass.cpp
+  Pipeline.cpp
 )
 
 add_library(Renderer SHARED ${SRC})

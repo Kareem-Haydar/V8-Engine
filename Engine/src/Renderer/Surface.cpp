@@ -1,5 +1,4 @@
 #include <Renderer/VulkanTypes.h>
-#include <Renderer/Config.h>
 
 #include <Core/Logger.h>
 
