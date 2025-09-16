@@ -14,7 +14,8 @@ namespace Renderer {
     const Shader& vertexShader;
     const Shader& fragmentShader;
 
-    std::vector<RenderPassDescription> renderPassDescriptions;
+    RenderPassDescription graphicsPassDescription;
+    GraphicsPipelineDescription graphicsPipelineDescription;
   };
 
   struct FrameConfig {
@@ -22,8 +23,6 @@ namespace Renderer {
       enum class Type {
         Graphics,
         Compute,
-        // I'll do that later
-        //RayTracing
       } type = Type::Graphics;
 
       struct GraphicsInfo {
@@ -63,8 +62,8 @@ namespace Renderer {
       FrameConfig config;
 
     public:
-      std::vector<RenderPass> renderPasses_;
-      std::vector<Pipeline> pipelines_;
+      RenderPass graphicsPass_;
+      Pipeline graphicsPipeline_;
       std::unordered_map<uint32_t, CommandPool> commandPools_;
       std::vector<CommandBuffer> commandBuffers_;
       std::vector<Semaphore> imageAvailableSemaphores_;

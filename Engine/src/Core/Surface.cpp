@@ -1,5 +1,6 @@
 #include <Renderer/VulkanTypes.h>
 
+#include <Core/WindowManager.h>
 #include <Core/Logger.h>
 
 void Renderer::Surface::Init(const Context& ctx, uint32_t windowId) {

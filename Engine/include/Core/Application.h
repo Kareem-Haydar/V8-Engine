@@ -8,25 +8,27 @@
 namespace Core {
   class Application {
     protected:
+      Renderer::Context defaultContext_;
+      Renderer::Device defaultDevice_;
       uint32_t defaultWindow_;
+
+      virtual void OnInit() {}
+      virtual void OnRawEvent(SDL_Event& e) {}
+      virtual void OnFrame(double dt) {}
+      virtual void OnShutdown() {}
 
       virtual void InitDefaultResources() {
         defaultWindow_ = Core::windowManager.CreateWindow("V8 Engine", 1280, 720);
       }
 
     public:
-      virtual void OnInit() {}
-      virtual void OnRawEvent(SDL_Event& e) {}
-      virtual void OnFrame(double dt) {}
-      virtual void OnShutdown() {}
-
       void Run() {
         // initlization
         if (SDL_Init(SDL_INIT_VIDEO) != 0) 
           V_FATAL("Failed to initialize SDL video subsystem: {}", SDL_GetError());
 
-        InitDefaultResources();
         OnInit();
+        InitDefaultResources();
 
         // main loop
 

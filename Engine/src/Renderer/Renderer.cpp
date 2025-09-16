@@ -7,6 +7,9 @@ void Renderer::Renderer::Init(const RendererDescription& info, const Config& con
   swapchain_ = &info.swapchain;
   surface_ = &info.surface;
 
+  graphicsPass_.Init(info.device, info.swapchain, info.graphicsPassDescription);
+  graphicsPipeline_.Init(info.device, info.swapchain, info.vertexShader, info.fragmentShader, graphicsPass_);
+
   renderPasses_.resize(info.renderPassDescriptions.size());
   for (size_t i = 0; i < info.renderPassDescriptions.size(); i++)
     renderPasses_[i].Init(info.device, info.swapchain, info.renderPassDescriptions[i]);

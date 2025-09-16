@@ -1,26 +1,34 @@
 #pragma once
 
 #include <unordered_map>
+#include <tuple>
 
-#include "Window.h"
+#include <Renderer/VulkanTypes.h>
+#include <Core/Window.h>
 
 namespace Core {
+  struct WindowEntry {
+    Window window;
+    Renderer::Surface surface;
+    Renderer::Swapchain swapchain;
+  };
+
   class WindowManager {
     private:
-      std::unordered_map<uint32_t, std::unique_ptr<Window>> windows_;
+      std::unordered_map<uint32_t, WindowEntry> windows_;
       uint32_t nextId_ = 0;
 
     public:
       WindowManager() = default;
       ~WindowManager() = default;
 
-      uint32_t CreateWindow(const char* title, int width, int height, bool resizable = false);
+      uint32_t CreateWindow(const Renderer::Context& ctx, const Renderer::Device& device, const char* title, int width, int height, bool resizable = false);
 
-      Window& GetWindow(uint32_t id) {
-        return *windows_.at(id);
+      WindowEntry& GetWindow(uint32_t id) {
+        return windows_.at(id);
       }
 
-      bool HasWindow(uint32_t id) const {
+      bool Exists(uint32_t id) const {
         return windows_.find(id) != windows_.end();
       }
 

@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
-#include <Core/WindowManager.h>
 #include <Core/Config.h>
 
 #include <Renderer/Config.h>
@@ -177,27 +176,27 @@ namespace Renderer {
       ~RenderPass();
   };
 
+  struct GraphicsPipelineDescription {
+    const Shader* vertexShader;
+    const Shader* fragmentShader;
+    const RenderPass* renderPass;
+    uint32_t subpass = 0;
+
+    std::vector<VkDynamicState> dynamicStates = {
+      VK_DYNAMIC_STATE_VIEWPORT,
+      VK_DYNAMIC_STATE_SCISSOR
+    };
+  };
+
   struct Pipeline {
     private:
       VkDevice device_;
-
-      std::vector<VkDynamicState> dynamicStates_ = {};
 
     public:
       VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
       VkPipeline pipeline_ = VK_NULL_HANDLE;
 
-      VkPipelineDynamicStateCreateInfo dynamicStateInfo_ = {};
-      VkPipelineVertexInputStateCreateInfo vertexInputInfo_ = {};
-      VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo_ = {};
-      VkPipelineViewportStateCreateInfo viewportInfo_ = {};
-      VkPipelineRasterizationStateCreateInfo rasterizerInfo_ = {};
-      VkPipelineMultisampleStateCreateInfo multisampleInfo_ = {};
-      VkPipelineColorBlendAttachmentState colorBlendAttachment_ = {};
-      VkPipelineColorBlendStateCreateInfo colorBlendingInfo_ = {};
-      VkPipelineDepthStencilStateCreateInfo depthStencilInfo_ = {};
-
-      void Init(const Device& device, const Swapchain& swapchain, const Shader& vertexShader, const Shader& fragmentShader, const RenderPass& renderPass,const Config& config = defaultConfig);
+      void Init(const Device& device, const Swapchain& swapchain, const GraphicsPipelineDescription& description, const Config& config = defaultConfig);
       ~Pipeline();
   };
 

@@ -1,4 +1,5 @@
 #include <Renderer/VulkanTypes.h>
+#include <Core/WindowManager.h>
 
 void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
   createInfo = {};

@@ -1,4 +1,5 @@
 #include <Renderer/VulkanTypes.h>
+#include <Core/WindowManager.h>
 
 Renderer::SwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
   Renderer::SwapchainSupportDetails details;

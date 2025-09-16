@@ -12,7 +12,7 @@ namespace Core {
       SDL_Window* window_;
 
     public:
-      Window(uint32_t width, uint32_t height, const char* title, bool resizable = false) {
+      void Init(uint32_t width, uint32_t height, const char* title, bool resizable = false) {
         int flags = SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN;
         if (resizable) flags |= SDL_WINDOW_RESIZABLE;
 
