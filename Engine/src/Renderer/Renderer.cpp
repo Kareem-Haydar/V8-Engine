@@ -10,6 +10,16 @@ void Renderer::Renderer::Init(const RendererDescription& info, const Config& con
   renderPasses_.resize(info.renderPassDescriptions.size());
   for (size_t i = 0; i < info.renderPassDescriptions.size(); i++)
     renderPasses_[i].Init(info.device, info.swapchain, info.renderPassDescriptions[i]);
+
+  imageAvailableSemaphores_.resize(swapchain_->images_.size());
+  renderFinishedSemaphores_.resize(swapchain_->images_.size());
+  inFlightFences_.resize(swapchain_->images_.size());
+
+  for (size_t i = 0; i < swapchain_->images_.size(); i++) {
+    imageAvailableSemaphores_[i].Init(info.device);
+    renderFinishedSemaphores_[i].Init(info.device);
+    inFlightFences_[i].Init(info.device, true);
+  }
 }
 
 void Renderer::Renderer::RenderFrame(std::optional<FrameConfig> config) {

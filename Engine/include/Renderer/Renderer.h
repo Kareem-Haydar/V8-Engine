@@ -2,6 +2,8 @@
 
 #include "VulkanTypes.h"
 
+#include <variant>
+
 namespace Renderer {
   struct RendererDescription {
     const Context& ctx;
@@ -20,8 +22,20 @@ namespace Renderer {
       enum class Type {
         Graphics,
         Compute,
-        RayTracing
+        // I'll do that later
+        //RayTracing
       } type = Type::Graphics;
+
+      struct GraphicsInfo {
+        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        std::vector<uint32_t> subpassIndices;
+      };
+
+      struct ComputeInfo {
+        // Future compute-specific configurations can be added here
+      };
+
+      std::variant<GraphicsInfo, ComputeInfo> info;
 
       uint32_t pipelineIndex = 0;
     };
@@ -53,6 +67,9 @@ namespace Renderer {
       std::vector<Pipeline> pipelines_;
       std::unordered_map<uint32_t, CommandPool> commandPools_;
       std::vector<CommandBuffer> commandBuffers_;
+      std::vector<Semaphore> imageAvailableSemaphores_;
+      std::vector<Semaphore> renderFinishedSemaphores_;
+      std::vector<Fence> inFlightFences_;
 
       void Init(const RendererDescription& info, const Config& config = defaultConfig);
       void RenderFrame(std::optional<FrameConfig> config = std::nullopt);

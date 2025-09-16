@@ -13,6 +13,10 @@ class MyApp : public Core::Application {
     Renderer::Shader fragmentShader;
     Renderer::Pipeline pipeline;
 
+    void InitDefaultResources() override {
+      defaultWindow_ = Core::windowManager.CreateWindow("Vulkan App", 800, 600);
+    }
+
     void OnInit() override {
       V_INFO("initializing");
 

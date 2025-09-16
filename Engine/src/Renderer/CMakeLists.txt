@@ -6,6 +6,8 @@ set(SRC
   Swapchain.cpp
   RenderPass.cpp
   Pipeline.cpp
+  Semaphore.cpp
+  Fence.cpp
 )
 
 add_library(Renderer SHARED ${SRC})

@@ -225,4 +225,27 @@ namespace Renderer {
       void End();
       void Submit(const Device& device, const QueueFamilyIndices& queueFamilyIndices);
   };
+
+  struct Semaphore {
+    private:
+      VkDevice device_;
+
+    public:
+      VkSemaphore semaphore_ = VK_NULL_HANDLE;
+
+      void Init(const Device& device);
+      ~Semaphore();
+  };
+
+  struct Fence {
+    private:
+      VkDevice device_;
+
+    public:
+      VkFence fence_ = VK_NULL_HANDLE;
+
+      void Init(const Device& device, bool signaled = false);
+      void Cleanup();
+      ~Fence();
+  };
 }
