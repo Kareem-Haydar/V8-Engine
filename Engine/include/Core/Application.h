@@ -5,6 +5,8 @@
 #include "WindowManager.h"
 #include "Logger.h"
 
+#include <Renderer/RenderManager.h>
+
 namespace Core {
   class Application {
     protected:
@@ -25,6 +27,7 @@ namespace Core {
         defaultSurface_.Init(defaultContext_, defaultWindow_);
         defaultDevice_.Init(defaultContext_, defaultSurface_);
         defaultSwapchain_.Init(defaultDevice_, defaultSurface_, defaultWindow_);
+        Renderer::renderManager.Init(defaultContext_, defaultDevice_);
       }
 
     public:
@@ -33,8 +36,8 @@ namespace Core {
         if (SDL_Init(SDL_INIT_VIDEO) != 0) 
           V_FATAL("Failed to initialize SDL video subsystem: {}", SDL_GetError());
 
-        OnInit();
         InitDefaultResources();
+        OnInit();
 
         // main loop
 

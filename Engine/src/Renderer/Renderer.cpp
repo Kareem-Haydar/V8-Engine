@@ -49,6 +49,8 @@ void Renderer::Renderer::RenderFrame() {
 
   uint32_t imageIndex;
   vkAcquireNextImageKHR(device_->device_, swapchain_->swapchain_, UINT64_MAX, imageAvailableSemaphores_[currentFrame_].semaphore_, VK_NULL_HANDLE, &imageIndex);
+  V_INFO("Acquired image index: {}", imageIndex);
+  V_INFO("Current frame: {}", currentFrame_);
 
   vkResetCommandBuffer(commandBuffers_[imageIndex].buffer_, 0);
   commandBuffers_[imageIndex].Begin();

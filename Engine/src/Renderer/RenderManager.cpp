@@ -1,6 +1,8 @@
 #include <Renderer/RenderManager.h>
 
-Renderer::RenderManager renderManager = Renderer::RenderManager();
+namespace Renderer {
+  RenderManager renderManager;
+}
 
 uint32_t Renderer::RenderManager::CreateRenderer(uint32_t windowId, const Surface& surface, const Swapchain& swapchain, const Shader& vertexShader, const Shader& fragmentShader, const Config& config) {
   uint32_t rendererId = nextRendererId_;

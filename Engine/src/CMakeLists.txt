@@ -10,8 +10,8 @@ set(SRC
   Renderer/Fence.cpp
   Renderer/CommandPool.cpp
   Renderer/CommandBuffer.cpp
-  Renderer/RenderManager.cpp
   Renderer/Renderer.cpp
+  Renderer/RenderManager.cpp
   Core/WindowManager.cpp
   Core/Logger.cpp
   Core/Config.cpp
