@@ -1,4 +1,5 @@
 #include <Renderer/VulkanTypes.h>
+#include <Core/Logger.h>
 
 void Renderer::Fence::Init(const Device& device, bool signaled) {
   device_ = device.device_;
@@ -8,7 +9,7 @@ void Renderer::Fence::Init(const Device& device, bool signaled) {
   fenceInfo.flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
 
   if (vkCreateFence(device_, &fenceInfo, nullptr, &fence_) != VK_SUCCESS)
-    throw std::runtime_error("failed to create fence!");
+    V_FATAL("Failed to create fence");
 }
 
 Renderer::Fence::~Fence() {

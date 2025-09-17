@@ -1,4 +1,5 @@
 #include <Renderer/VulkanTypes.h>
+#include <Core/Logger.h>
 
 void Renderer::Semaphore::Init(const Device& device) {
   device_ = device.device_;
@@ -6,9 +7,8 @@ void Renderer::Semaphore::Init(const Device& device) {
   VkSemaphoreCreateInfo semaphoreInfo{};
   semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-  if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &semaphore_) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create semaphore!");
-  }
+  if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &semaphore_) != VK_SUCCESS) 
+    V_FATAL("Failed to create semaphore");
 }
 
 Renderer::Semaphore::~Semaphore() {
