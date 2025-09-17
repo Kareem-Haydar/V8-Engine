@@ -10,6 +10,8 @@ namespace Core {
     protected:
       Renderer::Context defaultContext_;
       Renderer::Device defaultDevice_;
+      Renderer::Surface defaultSurface_;
+      Renderer::Swapchain defaultSwapchain_;
       uint32_t defaultWindow_;
 
       virtual void OnInit() {}
@@ -19,6 +21,10 @@ namespace Core {
 
       virtual void InitDefaultResources() {
         defaultWindow_ = Core::windowManager.CreateWindow("V8 Engine", 1280, 720);
+        defaultContext_.Init(defaultWindow_);
+        defaultSurface_.Init(defaultContext_, defaultWindow_);
+        defaultDevice_.Init(defaultContext_, defaultSurface_);
+        defaultSwapchain_.Init(defaultDevice_, defaultSurface_, defaultWindow_);
       }
 
     public:

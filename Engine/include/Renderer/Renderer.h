@@ -1,8 +1,9 @@
 #pragma once
 
-#include "VulkanTypes.h"
-
 #include <variant>
+#include <unordered_map>
+
+#include <Renderer/VulkanTypes.h>
 
 namespace Renderer {
   struct RendererDescription {
@@ -14,8 +15,8 @@ namespace Renderer {
     const Shader& vertexShader;
     const Shader& fragmentShader;
 
-    RenderPassDescription graphicsPassDescription;
-    GraphicsPipelineDescription graphicsPipelineDescription;
+    //std::vector<GraphicsPipelineDescription> graphicsPipelines;
+    //std::vector<RenderPassDescription> renderPasses;
   };
 
   struct FrameConfig {
@@ -25,8 +26,9 @@ namespace Renderer {
         Compute,
       } type = Type::Graphics;
 
+      VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
       struct GraphicsInfo {
-        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
         std::vector<uint32_t> subpassIndices;
       };
 
@@ -41,6 +43,7 @@ namespace Renderer {
 
     struct RenderPassUsage {
       uint32_t renderPassIndex = 0;
+      VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
       std::vector<PipelineUsage> pipelines;
     };
 
@@ -59,18 +62,18 @@ namespace Renderer {
       const Surface* surface_;
       const Swapchain* swapchain_;
 
-      FrameConfig config;
+      uint32_t currentFrame_ = 0;
 
     public:
-      RenderPass graphicsPass_;
       Pipeline graphicsPipeline_;
+      RenderPass renderPass_;
       std::unordered_map<uint32_t, CommandPool> commandPools_;
       std::vector<CommandBuffer> commandBuffers_;
       std::vector<Semaphore> imageAvailableSemaphores_;
       std::vector<Semaphore> renderFinishedSemaphores_;
       std::vector<Fence> inFlightFences_;
 
-      void Init(const RendererDescription& info, const Config& config = defaultConfig);
-      void RenderFrame(std::optional<FrameConfig> config = std::nullopt);
+      void Init(const RendererDescription& desc, const Config& config = defaultConfig);
+      void RenderFrame();
   };
 }

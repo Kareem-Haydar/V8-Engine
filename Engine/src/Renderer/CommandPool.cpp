@@ -1,5 +1,7 @@
 #include <Renderer/VulkanTypes.h>
 
+#include <Core/Logger.h>
+
 void Renderer::CommandPool::Init(const Device& device, uint32_t queueFamilyIndex) {
   device_ = device.device_;
   queueFamilyIndex_ = queueFamilyIndex;

@@ -26,7 +26,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 }
 
 void Renderer::Context::Init(uint32_t windowId, const Core::Config& config) {
-  if (!Core::windowManager.HasWindow(windowId)) {
+  if (!Core::windowManager.Exists(windowId)) {
     V_ERROR("Invalid window id: {}", windowId);
     return;
   }

@@ -1,4 +1,5 @@
 #include <Renderer/VulkanTypes.h>
+#include <Core/Logger.h>
 
 void Renderer::RenderPass::Init(const Device& device, const Swapchain& swapchain, const std::optional<RenderPassDescription>& description, const Config& config) {
   if (!description.has_value())

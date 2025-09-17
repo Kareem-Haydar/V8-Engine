@@ -15,17 +15,21 @@ namespace Core {
 
   class WindowManager {
     private:
-      std::unordered_map<uint32_t, WindowEntry> windows_;
+      std::unordered_map<uint32_t, Window> windows_;
       uint32_t nextId_ = 0;
 
     public:
       WindowManager() = default;
       ~WindowManager() = default;
 
-      uint32_t CreateWindow(const Renderer::Context& ctx, const Renderer::Device& device, const char* title, int width, int height, bool resizable = false);
+      uint32_t CreateWindow(const char* title, int width, int height, bool resizable = false);
 
-      WindowEntry& GetWindow(uint32_t id) {
-        return windows_.at(id);
+      Window& GetWindow(uint32_t id) {
+        auto it = windows_.find(id);
+        if (it != windows_.end())
+          return it->second;
+
+        V_ERROR("Window with ID {} does not exist.", id);
       }
 
       bool Exists(uint32_t id) const {

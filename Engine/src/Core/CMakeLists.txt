@@ -1,6 +1,5 @@
 set(SRC 
   Logger.cpp
-  WindowManager.cpp
   Config.cpp
 )
 

@@ -1,5 +1,7 @@
 #include <Renderer/VulkanTypes.h>
 
+#include <Core/Logger.h>
+
 void Renderer::CommandBuffer::Allocate(const Device& device, const CommandPool& commandPool, bool primary) {
   VkCommandBufferAllocateInfo allocInfo = {};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
