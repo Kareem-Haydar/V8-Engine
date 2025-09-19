@@ -1,12 +1,10 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
-
-#include <Core/Config.h>
+#include <Core/Context.h>
 
 #include <Renderer/Config.h>
 
+#include <vulkan/vulkan.h>
 #include <optional>
 
 namespace Renderer {
@@ -103,7 +101,7 @@ namespace Renderer {
       VkShaderModule shaderModule_ = VK_NULL_HANDLE;
       VkPipelineShaderStageCreateInfo stageInfo = {};
 
-      void Init(const Device& device, VkShaderStageFlagBits type, const char* path);
+      void Init(const Core::Context& context, VkShaderStageFlagBits type, const char* path);
       ~Shader();
   };
 
@@ -172,7 +170,7 @@ namespace Renderer {
       VkRenderPass renderPass_ = VK_NULL_HANDLE;
       RenderPassDescription description_ = {};
 
-      void Init(const Device& device, const Swapchain& swapchain, const std::optional<RenderPassDescription>& description = std::nullopt, const Config& config = defaultConfig);
+      void Init(const Core::Context& context, const std::optional<RenderPassDescription>& description = std::nullopt, const Config& config = defaultConfig);
       ~RenderPass();
   };
 
@@ -196,7 +194,7 @@ namespace Renderer {
       VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
       VkPipeline pipeline_ = VK_NULL_HANDLE;
 
-      void Init(const Device& device, const Swapchain& swapchain, const GraphicsPipelineDescription& description, const Config& config = defaultConfig);
+      void Init(const Core::Context& context, const GraphicsPipelineDescription& description, const Config& config = defaultConfig);
       ~Pipeline();
   };
 
@@ -222,7 +220,7 @@ namespace Renderer {
       void Allocate(const Device& device, const CommandPool& commandPool, bool primary = true);
       void Begin();
       void End();
-      void Submit(const Device& device, const QueueFamilyIndices& queueFamilyIndices);
+      void Submit(const Core::Context& context, const QueueFamilyIndices& queueFamilyIndices);
   };
 
   struct Semaphore {
@@ -232,7 +230,7 @@ namespace Renderer {
     public:
       VkSemaphore semaphore_ = VK_NULL_HANDLE;
 
-      void Init(const Device& device);
+      void Init(const Core::Context& context);
       ~Semaphore();
   };
 
@@ -243,7 +241,7 @@ namespace Renderer {
     public:
       VkFence fence_ = VK_NULL_HANDLE;
 
-      void Init(const Device& device, bool signaled = false);
+      void Init(const Core::Context& context, bool signaled = false);
       void Cleanup();
       ~Fence();
   };

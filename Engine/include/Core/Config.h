@@ -29,6 +29,11 @@ namespace Core {
     std::vector<const char*> validationLayers;
     std::vector<const char*> deviceExtensions;
     int physicalDeviceIndex = CHOOSE_BEST_DEVICE;
+    uint32_t windowWidth;
+    uint32_t windowHeight;
+    bool enableVSync;
+    bool fullscreen;
+    bool resizable;
   };
 
   extern Config defaultConfig;

@@ -12,9 +12,10 @@ namespace Core {
       SDL_Window* window_;
 
     public:
-      void Init(uint32_t width, uint32_t height, const char* title, bool resizable = false) {
+      void Init(uint32_t width, uint32_t height, const char* title, bool resizable = false, bool fullscreen = false) {
         int flags = SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN;
         if (resizable) flags |= SDL_WINDOW_RESIZABLE;
+        if (fullscreen) flags |= SDL_WINDOW_FULLSCREEN;
 
         window_ = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 

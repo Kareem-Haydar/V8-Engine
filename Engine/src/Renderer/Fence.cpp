@@ -1,8 +1,8 @@
 #include <Renderer/VulkanTypes.h>
 #include <Core/Logger.h>
 
-void Renderer::Fence::Init(const Device& device, bool signaled) {
-  device_ = device.device_;
+void Renderer::Fence::Init(const Core::Context& context, bool signaled) {
+  device_ = context.device_;
 
   VkFenceCreateInfo fenceInfo = {};
   fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

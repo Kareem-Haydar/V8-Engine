@@ -11,5 +11,10 @@ Core::Config Core::defaultConfig = {
   .enableValidationLayers = true,
   .validationLayers = { "VK_LAYER_KHRONOS_validation" },
   .deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME },
-  .physicalDeviceIndex = CHOOSE_BEST_DEVICE
+  .physicalDeviceIndex = CHOOSE_BEST_DEVICE,
+  .windowWidth = 1280,
+  .windowHeight = 720,
+  .enableVSync = false,
+  .fullscreen = false,
+  .resizable = false
 };

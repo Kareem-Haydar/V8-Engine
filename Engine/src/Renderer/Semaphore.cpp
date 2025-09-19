@@ -1,8 +1,8 @@
 #include <Renderer/VulkanTypes.h>
 #include <Core/Logger.h>
 
-void Renderer::Semaphore::Init(const Device& device) {
-  device_ = device.device_;
+void Renderer::Semaphore::Init(const Core::Context& context) {
+  device_ = context.device_;
 
   VkSemaphoreCreateInfo semaphoreInfo{};
   semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

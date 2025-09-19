@@ -1,9 +1,10 @@
 #include <Renderer/VulkanTypes.h>
+
 #include <Core/Logger.h>
 
-void Renderer::RenderPass::Init(const Device& device, const Swapchain& swapchain, const std::optional<RenderPassDescription>& description, const Config& config) {
+void Renderer::RenderPass::Init(const Core::Context& context, const std::optional<RenderPassDescription>& description, const Config& config) {
   if (!description.has_value())
-    description_ = RenderPassDescription::DefaultDescription(swapchain.imageFormat_, static_cast<VkSampleCountFlagBits>(config.sampleCount));
+    description_ = RenderPassDescription::DefaultDescription(context.swapchainImageFormat_, static_cast<VkSampleCountFlagBits>(config.sampleCount));
   else
     description_ = description.value();
 
@@ -16,10 +17,10 @@ void Renderer::RenderPass::Init(const Device& device, const Swapchain& swapchain
   createInfo.dependencyCount = static_cast<uint32_t>(description_.dependencies_.size());
   createInfo.pDependencies = description_.dependencies_.data();
 
-  if (vkCreateRenderPass(device.device_, &createInfo, nullptr, &renderPass_) != VK_SUCCESS)
+  if (vkCreateRenderPass(context.device_, &createInfo, nullptr, &renderPass_) != VK_SUCCESS)
     V_FATAL("Failed to create render pass");
 
-  device_ = device.device_;
+  device_ = context.device_;
 }
 
 Renderer::RenderPass::~RenderPass() {

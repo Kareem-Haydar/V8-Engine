@@ -1,20 +1,22 @@
 set(SRC 
   Renderer/Config.cpp
-  Renderer/Context.cpp
-  Renderer/Device.cpp
-  Renderer/Surface.cpp
-  Renderer/Swapchain.cpp
+  #Renderer/Context.cpp
+  #Renderer/Device.cpp
+  #Renderer/Surface.cpp
+  #Renderer/Swapchain.cpp
   Renderer/RenderPass.cpp
   Renderer/Pipeline.cpp
   Renderer/Semaphore.cpp
   Renderer/Fence.cpp
-  Renderer/CommandPool.cpp
-  Renderer/CommandBuffer.cpp
-  Renderer/Renderer.cpp
-  Renderer/RenderManager.cpp
-  Core/WindowManager.cpp
+  #Renderer/CommandPool.cpp
+  #Renderer/CommandBuffer.cpp
+  #Renderer/Renderer.cpp
+  #Renderer/RenderManager.cpp
+  #Core/WindowManager.cpp
   Core/Logger.cpp
   Core/Config.cpp
+  Core/Context.cpp
+  Core/ECS.cpp
 )
 
 add_library(V8-lib SHARED ${SRC})

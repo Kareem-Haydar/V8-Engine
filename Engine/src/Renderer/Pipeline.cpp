@@ -21,7 +21,7 @@ std::vector<char> ReadFile(const std::string& filename) {
   return buffer;
 }
 
-void Renderer::Shader::Init(const Device& device, VkShaderStageFlagBits type, const char* path) {
+void Renderer::Shader::Init(const Core::Context& context, VkShaderStageFlagBits type, const char* path) {
   std::vector<char> code = ReadFile(path);
 
   VkShaderModuleCreateInfo createInfo {};
@@ -29,7 +29,7 @@ void Renderer::Shader::Init(const Device& device, VkShaderStageFlagBits type, co
   createInfo.codeSize = code.size();
   createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-  if (vkCreateShaderModule(device.device_, &createInfo, nullptr, &shaderModule_) != VK_SUCCESS) 
+  if (vkCreateShaderModule(context.device_, &createInfo, nullptr, &shaderModule_) != VK_SUCCESS)
     V_FATAL("Failed to create shader module from {}", path);
 
   stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -37,7 +37,7 @@ void Renderer::Shader::Init(const Device& device, VkShaderStageFlagBits type, co
   stageInfo.module = shaderModule_;
   stageInfo.pName = "main";
 
-  device_ = device.device_;
+  device_ = context.device_;
 }
 
 Renderer::Shader::~Shader() {
@@ -45,7 +45,7 @@ Renderer::Shader::~Shader() {
     vkDestroyShaderModule(device_, shaderModule_, nullptr);
 }
 
-void Renderer::Pipeline::Init(const Device& device, const Swapchain& swapchain, const GraphicsPipelineDescription& description, const Config& config) {
+void Renderer::Pipeline::Init(const Core::Context& context, const GraphicsPipelineDescription& description, const Config& config) {
 VkPipelineDynamicStateCreateInfo dynamicStateInfo = {};
 VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
@@ -121,7 +121,7 @@ VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
   layoutInfo.pushConstantRangeCount = 0;
   layoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(device.device_, &layoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS)
+  if (vkCreatePipelineLayout(context.device_, &layoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS)
     V_FATAL("Failed to create pipeline layout");
 
   VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -140,10 +140,10 @@ VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
   pipelineInfo.pDynamicState = &dynamicStateInfo;
 
-  if (vkCreateGraphicsPipelines(device.device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_) != VK_SUCCESS)
+  if (vkCreateGraphicsPipelines(context.device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_) != VK_SUCCESS)
     V_FATAL("Failed to create graphics pipeline");
 
-  device_ = device.device_;
+  device_ = context.device_;
 }
 
 Renderer::Pipeline::~Pipeline() {
