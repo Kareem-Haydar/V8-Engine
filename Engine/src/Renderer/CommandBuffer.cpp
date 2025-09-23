@@ -2,14 +2,14 @@
 
 #include <Core/Logger.h>
 
-void Renderer::CommandBuffer::Allocate(const Device& device, const CommandPool& commandPool, bool primary) {
+void Renderer::CommandBuffer::Allocate(Core::Context& context, uint32_t queueFamilyIndex, bool primary) {
   VkCommandBufferAllocateInfo allocInfo = {};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  allocInfo.commandPool = commandPool.commandPool_;
+  allocInfo.commandPool = context.commandPools_[queueFamilyIndex];
   allocInfo.level = primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
   allocInfo.commandBufferCount = 1;
 
-  if (vkAllocateCommandBuffers(device.device_, &allocInfo, &buffer_) != VK_SUCCESS) {
+  if (vkAllocateCommandBuffers(context.device_, &allocInfo, &buffer_) != VK_SUCCESS) {
     throw std::runtime_error("failed to allocate command buffers!");
   }
 }

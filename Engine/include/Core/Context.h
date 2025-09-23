@@ -9,37 +9,65 @@
 
 namespace Core {
   struct Context {
-    VkInstance instance_ = VK_NULL_HANDLE;
-    VkDebugUtilsMessengerEXT debugMessenger_ = VK_NULL_HANDLE;
+    private:
+      void CleanupSwapchain() {
+        for (auto imageView : swapchainImageViews_)
+          vkDestroyImageView(device_, imageView, nullptr);
 
-    VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+        vkDestroySwapchainKHR(device_, swapchain_, nullptr);
+      }
 
-    VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
-    VkDevice device_ = VK_NULL_HANDLE;
+      void CleanupSyncObjects() {
+        for (size_t i = 0; i < swapchainImages_.size(); i++) {
+          vkDestroySemaphore(device_, imageAvailableSemaphores_[i], nullptr);
+          vkDestroySemaphore(device_, renderFinishedSemaphores_[i], nullptr);
+          vkDestroyFence(device_, inFlightFences_[i], nullptr);
+        }
 
-    VkQueue graphicsQueue_ = VK_NULL_HANDLE;
-    VkQueue presentQueue_ = VK_NULL_HANDLE;
+        imageAvailableSemaphores_.clear();
+        renderFinishedSemaphores_.clear();
+        inFlightFences_.clear();
+      }
 
-    uint32_t graphicsQueueFamilyIndex_ = 0;
-    uint32_t presentQueueFamilyIndex_ = 0;
+      void CreateSwapchain();
+      void CreateSyncObjects();
 
-    VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
-    VkFormat swapchainImageFormat_ = VK_FORMAT_UNDEFINED;
-    VkExtent2D swapchainExtent_ = {};
+    public:
+      bool needsResize_ = false;
 
-    std::vector<VkImage> swapchainImages_;
-    std::vector<VkImageView> swapchainImageViews_;
+      VkInstance instance_ = VK_NULL_HANDLE;
+      VkDebugUtilsMessengerEXT debugMessenger_ = VK_NULL_HANDLE;
 
-    std::unordered_map<uint32_t, VkCommandPool> commandPools_;
+      VkSurfaceKHR surface_ = VK_NULL_HANDLE;
 
-    std::vector<VkSemaphore> imageAvailableSemaphores_;
-    std::vector<VkSemaphore> renderFinishedSemaphores_;
-    std::vector<VkFence> inFlightFences_;
+      VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
+      VkDevice device_ = VK_NULL_HANDLE;
 
-    Config config_;
-    Window window_;
+      VkQueue graphicsQueue_ = VK_NULL_HANDLE;
+      VkQueue presentQueue_ = VK_NULL_HANDLE;
 
-    void Init(const Config& config = defaultConfig);
-    ~Context();
+      uint32_t graphicsQueueFamilyIndex_ = 0;
+      uint32_t presentQueueFamilyIndex_ = 0;
+
+      VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
+      VkFormat swapchainImageFormat_ = VK_FORMAT_UNDEFINED;
+      VkExtent2D swapchainExtent_ = {};
+
+      std::vector<VkImage> swapchainImages_;
+      std::vector<VkImageView> swapchainImageViews_;
+
+      std::unordered_map<uint32_t, VkCommandPool> commandPools_;
+
+      std::vector<VkSemaphore> imageAvailableSemaphores_;
+      std::vector<VkSemaphore> renderFinishedSemaphores_;
+      std::vector<VkFence> inFlightFences_;
+
+      Config config_;
+      Window window_;
+
+      void Init(const Config& config = defaultConfig);
+      ~Context();
+
+      void HandleResize(uint32_t newWidth, uint32_t newHeight);
   };
 }

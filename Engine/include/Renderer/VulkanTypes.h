@@ -8,56 +8,6 @@
 #include <optional>
 
 namespace Renderer {
-  struct Context {
-    VkInstance instance_ = VK_NULL_HANDLE;
-    VkDebugUtilsMessengerEXT debugMessenger_ = VK_NULL_HANDLE;
-
-    const char* appName_ = "";
-    const char* engineName_ = "";
-
-    uint32_t appVersion_ = 0;
-    uint32_t engineVersion_ = 0;
-    uint32_t apiVersion_ = 0;
-
-    uint32_t windowId_ = 0;
-
-    void Init(uint32_t windowId, const Core::Config& config = Core::defaultConfig);
-    ~Context();
-  };
-
-  struct Surface {
-    private:
-      VkInstance instance_ = VK_NULL_HANDLE;
-
-    public:
-      VkSurfaceKHR surface_ = VK_NULL_HANDLE;
-      uint32_t windowId_ = 0;
-
-      void Init(const Context& ctx, uint32_t windowId);
-      ~Surface();
-  };
-
-  struct Device {
-    private:
-      VkInstance instance_ = VK_NULL_HANDLE;
-
-    public:
-      VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
-      VkDevice device_ = VK_NULL_HANDLE;
-
-      VkPhysicalDeviceProperties physicalDeviceProperties_ = {};
-      VkPhysicalDeviceFeatures physicalDeviceFeatures_ = {};
-      
-      uint32_t graphicsQueueFamilyIndex_ = 0;
-      uint32_t presentQueueFamilyIndex_ = 0;
-
-      VkQueue graphicsQueue_ = VK_NULL_HANDLE;
-      VkQueue presentQueue_ = VK_NULL_HANDLE;
-
-      void Init(const Context& ctx, const Surface& surface,const Core::Config& config = Core::defaultConfig);
-      ~Device();
-  };
-
   struct RenderPass;
 
   struct QueueFamilyIndices {
@@ -73,24 +23,6 @@ namespace Renderer {
     VkSurfaceCapabilitiesKHR capabilities_ = {};
     std::vector<VkSurfaceFormatKHR> formats_ = {};
     std::vector<VkPresentModeKHR> presentModes_ = {};
-  };
-
-  struct Swapchain {
-    private:
-      VkDevice device_;
-
-    public:
-      VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
-      VkFormat imageFormat_ = VK_FORMAT_UNDEFINED;
-      VkExtent2D extent_ = {};
-
-      std::vector<VkImage> images_ = {};
-      std::vector<VkImageView> imageViews_ = {};
-      std::vector<VkFramebuffer> framebuffers_ = {};
-
-      void Init(const Device& device, const Surface& surface, uint32_t windowID);
-      void GetFramebuffers(const RenderPass& renderPass);
-      ~Swapchain();
   };
 
   struct Shader {
@@ -198,18 +130,6 @@ namespace Renderer {
       ~Pipeline();
   };
 
-  struct CommandPool {
-    private:
-      VkDevice device_;
-
-    public:
-      VkCommandPool commandPool_ = VK_NULL_HANDLE;
-      uint32_t queueFamilyIndex_ = 0;
-
-      void Init(const Device& device, uint32_t queueFamilyIndex);
-      ~CommandPool();
-  };
-
   struct CommandBuffer {
     private: 
       VkDevice device_;
@@ -217,7 +137,7 @@ namespace Renderer {
     public:
       VkCommandBuffer buffer_ = VK_NULL_HANDLE;
 
-      void Allocate(const Device& device, const CommandPool& commandPool, bool primary = true);
+      void Allocate(Core::Context& context, uint32_t queueFamilyIndex, bool primary = true);
       void Begin();
       void End();
       void Submit(const Core::Context& context, const QueueFamilyIndices& queueFamilyIndices);

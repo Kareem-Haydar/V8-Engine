@@ -1,54 +1,31 @@
 #pragma once
 
-#include <Core/WindowManager.h>
 #include <Renderer/Renderer.h>
+
+#include <unordered_map>
 
 namespace Renderer {
   class RenderManager {
-     private:
-        Context* ctx_ = nullptr;
-        Device* device_ = nullptr;
+    private:
+      Core::Context* context_;
+      std::unordered_map<uint32_t, Renderer> renderers_;
+      uint32_t nextId_ = 0;
 
-        std::unordered_map<uint32_t, Renderer> renderers_;
+    public:
+      void Init(Core::Context* context) {
+        context_ = context;
+      }
 
-        uint32_t nextRendererId_ = 0;
+      void Shutdown() {
+        renderers_.clear();
+      }
 
-      public:
-        RenderManager() = default;
-        ~RenderManager() = default;
+      uint32_t CreateRenderer(const char* vertexShaderPath, const char* fragmentShaderPath, const RenderPassDescription& renderPassDesc, const Config& config = defaultConfig);
+      void RemoveRenderer(uint32_t rendererId);
+      Renderer* GetRenderer(uint32_t rendererId);
+      void Render(uint32_t rendererId);
+      void RenderAll();
 
-        void Init(Context& ctx, Device& device) {
-          ctx_ = &ctx;
-          device_ = &device;
-        }
-
-        uint32_t CreateRenderer(uint32_t windowId, const Surface& surface, const Swapchain& swapchain, const Shader& vertexShader, const Shader& fragmentShader, const Config& config = defaultConfig);
-
-        Renderer& GetRenderer(uint32_t rendererId) {
-          auto it = renderers_.find(rendererId);
-          if (it != renderers_.end())
-            return it->second;
-
-          V_ERROR("Renderer with ID {} does not exist.", rendererId);
-        }
-
-        void RemoveRenderer(uint32_t rendererId) {
-          renderers_.erase(rendererId);
-        }
-
-        void Render(uint32_t rendererId) {
-          auto it = renderers_.find(rendererId);
-          if (it != renderers_.end())
-            it->second.RenderFrame();
-          else
-            V_ERROR("Renderer with ID {} does not exist.", rendererId);
-        }
-
-        void RenderAll() {
-          for (auto& [id, renderer] : renderers_)
-            renderer.RenderFrame();
-        }
+      void HandleResize();
   };
-
-  extern RenderManager renderManager;
 }

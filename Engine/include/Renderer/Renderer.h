@@ -1,79 +1,68 @@
 #pragma once
 
-#include <variant>
-#include <unordered_map>
+#include <Core/Context.h>
+#include <Renderer/Config.h>
 
-#include <Renderer/VulkanTypes.h>
+#include <optional>
 
 namespace Renderer {
-  struct RendererDescription {
-    const Context& ctx;
-    const Device& device;
-    const Surface& surface;
-    const Swapchain& swapchain;
+  struct RenderPassDescription {
+    std::vector<VkAttachmentDescription> attachments_;
+    std::vector<VkAttachmentReference> attachmentRefs_;
+    std::vector<VkSubpassDescription> subpasses_;
+    std::vector<VkSubpassDependency> dependencies_;
 
-    const Shader& vertexShader;
-    const Shader& fragmentShader;
+    static RenderPassDescription Default(VkFormat imageFormat, const Renderer::Config& config = defaultConfig) {
+      RenderPassDescription desc;
 
-    //std::vector<GraphicsPipelineDescription> graphicsPipelines;
-    //std::vector<RenderPassDescription> renderPasses;
-  };
+      desc.attachments_.resize(1);
+      desc.attachments_[0].format = imageFormat;
+      desc.attachments_[0].samples = static_cast<VkSampleCountFlagBits>(config.sampleCount);
+      desc.attachments_[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      desc.attachments_[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+      desc.attachments_[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      desc.attachments_[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      desc.attachments_[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      desc.attachments_[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-  struct FrameConfig {
-    struct PipelineUsage {
-      enum class Type {
-        Graphics,
-        Compute,
-      } type = Type::Graphics;
+      desc.attachmentRefs_.resize(1);
+      desc.attachmentRefs_[0].attachment = 0;
+      desc.attachmentRefs_[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-      VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+      desc.subpasses_.resize(1);
+      desc.subpasses_[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+      desc.subpasses_[0].colorAttachmentCount = 1;
+      desc.subpasses_[0].pColorAttachments = &desc.attachmentRefs_[0];
 
-      struct GraphicsInfo {
-        std::vector<uint32_t> subpassIndices;
-      };
+      desc.dependencies_.resize(1);
+      desc.dependencies_[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+      desc.dependencies_[0].dstSubpass = 0;
+      desc.dependencies_[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      desc.dependencies_[0].srcAccessMask = 0;
+      desc.dependencies_[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      desc.dependencies_[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 
-      struct ComputeInfo {
-        // Future compute-specific configurations can be added here
-      };
-
-      std::variant<GraphicsInfo, ComputeInfo> info;
-
-      uint32_t pipelineIndex = 0;
-    };
-
-    struct RenderPassUsage {
-      uint32_t renderPassIndex = 0;
-      VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-      std::vector<PipelineUsage> pipelines;
-    };
-
-    struct CommandBufferUsage {
-      std::vector<RenderPassUsage> renderPasses;
-      std::vector<PipelineUsage> standalonePipelines;
-    };
-
-    std::vector<CommandBufferUsage> commandBuffers;
+      return desc;
+    }
   };
 
   class Renderer {
     private:
-      const Context* ctx_;
-      const Device* device_;
-      const Surface* surface_;
-      const Swapchain* swapchain_;
-
       uint32_t currentFrame_ = 0;
+      Core::Context* context_ = nullptr;
 
     public:
-      Pipeline graphicsPipeline_;
-      RenderPass renderPass_;
-      std::unordered_map<uint32_t, CommandPool> commandPools_;
-      std::vector<CommandBuffer> commandBuffers_;
-      std::vector<Semaphore> imageAvailableSemaphores_;
-      std::vector<Semaphore> renderFinishedSemaphores_;
-      std::vector<Fence> inFlightFences_;
+      VkRenderPass renderPass_ = VK_NULL_HANDLE;
+      VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
+      VkPipeline pipeline_ = VK_NULL_HANDLE;
+      std::vector<VkCommandBuffer> commandBuffers_;
 
-      void Init(const RendererDescription& desc, const Config& config = defaultConfig);
-      void RenderFrame();
+      std::vector<VkFramebuffer> framebuffers_;
+
+      void Init(Core::Context& ctx, const char* vertexShaderPath, const char* fragmentShaderPath, const std::optional<RenderPassDescription>& renderPassDesc = std::nullopt, const Config& config = defaultConfig);
+      ~Renderer();
+
+      void Render();
+      void HandleResize();
   };
 }

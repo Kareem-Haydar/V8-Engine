@@ -1,30 +1,36 @@
 #include <Renderer/RenderManager.h>
 
-namespace Renderer {
-  RenderManager renderManager;
+uint32_t Renderer::RenderManager::CreateRenderer(const char* vertexShaderPath, const char* fragmentShaderPath, const RenderPassDescription& renderPassDesc, const Config& config) {
+  uint32_t id = nextId_++;
+  renderers_[id].Init(*context_, vertexShaderPath, fragmentShaderPath, renderPassDesc, config);
+  return id;
 }
 
-uint32_t Renderer::RenderManager::CreateRenderer(uint32_t windowId, const Surface& surface, const Swapchain& swapchain, const Shader& vertexShader, const Shader& fragmentShader, const Config& config) {
-  uint32_t rendererId = nextRendererId_;
+Renderer::Renderer* Renderer::RenderManager::GetRenderer(uint32_t id) {
+  if (renderers_.find(id) == renderers_.end())
+    return nullptr;
 
-  if (!ctx_ || !device_)
-    V_ERROR("RenderManager not initialized with context and device");
+  return &renderers_[id];
+}
 
-  if (renderers_.find(windowId) != renderers_.end())
-    V_ERROR("Renderer for this window ID already exists.");
+void Renderer::RenderManager::RemoveRenderer(uint32_t id) {
+  renderers_.erase(id);
+}
 
-  Core::Window& windowEntry = Core::windowManager.GetWindow(windowId);
+void Renderer::RenderManager::Render(uint32_t id) {
+  if (context_->needsResize_) return;
 
-  RendererDescription desc = {
-    *ctx_,
-    *device_,
-    surface,
-    swapchain,
-    vertexShader,
-    fragmentShader
-  };
+  renderers_[id].Render();
+}
 
-  nextRendererId_++;
-  renderers_[rendererId].Init(desc, config);
-  return rendererId;
+void Renderer::RenderManager::RenderAll() {
+  if (context_->needsResize_) return;
+
+  for (auto& [id, renderer] : renderers_)
+    renderer.Render();
+}
+
+void Renderer::RenderManager::HandleResize() {
+  for (auto& [_, renderer] : renderers_)
+    renderer.HandleResize();
 }

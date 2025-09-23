@@ -198,6 +198,100 @@ void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
   createInfo.pfnUserCallback = DebugCallback;
 }
 
+void Core::Context::CreateSwapchain() {
+  SwapchainSupportDetails swapchainSupport = QuerySwapchainSupport(physicalDevice_, surface_);
+  VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);
+  VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes, config_.enableVSync);
+  VkExtent2D extent = ChooseSwapExtent(swapchainSupport.capabilities, config_.windowWidth, config_.windowHeight);
+
+  uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
+  if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) 
+    imageCount = swapchainSupport.capabilities.maxImageCount;
+
+  VkSwapchainCreateInfoKHR swapchainCreateInfo {};
+  swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  swapchainCreateInfo.surface = surface_;
+  swapchainCreateInfo.minImageCount = imageCount;
+  swapchainCreateInfo.imageFormat = surfaceFormat.format;
+  swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
+  swapchainCreateInfo.imageExtent = extent;
+  swapchainCreateInfo.imageArrayLayers = 1;
+  swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  
+  if (graphicsQueueFamilyIndex_ != presentQueueFamilyIndex_) {
+    uint32_t queueFamilyIndices[] = { graphicsQueueFamilyIndex_, presentQueueFamilyIndex_ };
+    swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    swapchainCreateInfo.queueFamilyIndexCount = 2;
+    swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+  } else {
+    swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchainCreateInfo.queueFamilyIndexCount = 0;
+    swapchainCreateInfo.pQueueFamilyIndices = nullptr;
+  }
+
+  swapchainCreateInfo.preTransform = swapchainSupport.capabilities.currentTransform;
+  swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  swapchainCreateInfo.presentMode = presentMode;
+  swapchainCreateInfo.clipped = VK_TRUE;
+  swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+
+  if (vkCreateSwapchainKHR(device_, &swapchainCreateInfo, nullptr, &swapchain_) != VK_SUCCESS) 
+    V_FATAL("Failed to create swapchain");
+
+  swapchainImageFormat_ = surfaceFormat.format;
+  swapchainExtent_ = extent;
+
+  // Retrieve swapchain images
+  vkGetSwapchainImagesKHR(device_, swapchain_, &imageCount, nullptr);
+  swapchainImages_.clear();
+  swapchainImages_.resize(imageCount);
+  vkGetSwapchainImagesKHR(device_, swapchain_, &imageCount, swapchainImages_.data());
+
+  // Create image views for swapchain images
+  swapchainImageViews_.clear();
+  swapchainImageViews_.resize(swapchainImages_.size());
+  for (size_t i = 0; i < swapchainImages_.size(); i++) {
+    VkImageViewCreateInfo viewCreateInfo {};
+    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewCreateInfo.image = swapchainImages_[i];
+    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewCreateInfo.format = swapchainImageFormat_;
+    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewCreateInfo.subresourceRange.baseMipLevel = 0;
+    viewCreateInfo.subresourceRange.levelCount = 1;
+    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    viewCreateInfo.subresourceRange.layerCount = 1;
+
+    if (vkCreateImageView(device_, &viewCreateInfo, nullptr, &swapchainImageViews_[i]) != VK_SUCCESS) 
+      V_FATAL("Failed to create image views for swapchain images");
+  }
+}
+
+void Core::Context::CreateSyncObjects() {
+  imageAvailableSemaphores_.resize(swapchainImages_.size());
+  renderFinishedSemaphores_.resize(swapchainImages_.size());
+  inFlightFences_.resize(swapchainImages_.size());
+
+  VkSemaphoreCreateInfo semaphoreInfo {};
+  semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+  VkFenceCreateInfo fenceInfo {};
+  fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+  for (size_t i = 0; i < swapchainImages_.size(); i++) {
+    if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS ||
+        vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS ||
+        vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS) {
+      V_FATAL("Failed to create synchronization objects for a frame");
+    }
+  }
+}
+
 void Core::Context::Init(const Config& config) {
   config_ = config;
 
@@ -331,97 +425,10 @@ void Core::Context::Init(const Config& config) {
   }
 
   // Create swapchain
-  SwapchainSupportDetails swapchainSupport = QuerySwapchainSupport(physicalDevice_, surface_);
-  VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);
-  VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes, config_.enableVSync);
-  VkExtent2D extent = ChooseSwapExtent(swapchainSupport.capabilities, config_.windowWidth, config_.windowHeight);
-
-  uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
-  if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) 
-    imageCount = swapchainSupport.capabilities.maxImageCount;
-
-  VkSwapchainCreateInfoKHR swapchainCreateInfo {};
-  swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  swapchainCreateInfo.surface = surface_;
-  swapchainCreateInfo.minImageCount = imageCount;
-  swapchainCreateInfo.imageFormat = surfaceFormat.format;
-  swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-  swapchainCreateInfo.imageExtent = extent;
-  swapchainCreateInfo.imageArrayLayers = 1;
-  swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  
-  if (graphicsQueueFamilyIndex_ != presentQueueFamilyIndex_) {
-    uint32_t queueFamilyIndices[] = { graphicsQueueFamilyIndex_, presentQueueFamilyIndex_ };
-    swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-    swapchainCreateInfo.queueFamilyIndexCount = 2;
-    swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
-  } else {
-    swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swapchainCreateInfo.queueFamilyIndexCount = 0;
-    swapchainCreateInfo.pQueueFamilyIndices = nullptr;
-  }
-
-  swapchainCreateInfo.preTransform = swapchainSupport.capabilities.currentTransform;
-  swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  swapchainCreateInfo.presentMode = presentMode;
-  swapchainCreateInfo.clipped = VK_TRUE;
-  swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
-
-  if (vkCreateSwapchainKHR(device_, &swapchainCreateInfo, nullptr, &swapchain_) != VK_SUCCESS) 
-    V_FATAL("Failed to create swapchain");
-
-  swapchainImageFormat_ = surfaceFormat.format;
-  swapchainExtent_ = extent;
-
-  // Retrieve swapchain images
-  vkGetSwapchainImagesKHR(device_, swapchain_, &imageCount, nullptr);
-  swapchainImages_.resize(imageCount);
-  vkGetSwapchainImagesKHR(device_, swapchain_, &imageCount, swapchainImages_.data());
-
-  // Create image views for swapchain images
-  swapchainImageViews_.resize(swapchainImages_.size());
-  for (size_t i = 0; i < swapchainImages_.size(); i++) {
-    VkImageViewCreateInfo viewCreateInfo {};
-    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewCreateInfo.image = swapchainImages_[i];
-    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewCreateInfo.format = swapchainImageFormat_;
-    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewCreateInfo.subresourceRange.baseMipLevel = 0;
-    viewCreateInfo.subresourceRange.levelCount = 1;
-    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    viewCreateInfo.subresourceRange.layerCount = 1;
-
-    if (vkCreateImageView(device_, &viewCreateInfo, nullptr, &swapchainImageViews_[i]) != VK_SUCCESS) 
-      V_FATAL("Failed to create image views for swapchain images");
-  }
+  CreateSwapchain();
 
   // Create synchronization objects
-  imageAvailableSemaphores_.resize(swapchainImages_.size());
-  renderFinishedSemaphores_.resize(swapchainImages_.size());
-  inFlightFences_.resize(swapchainImages_.size());
-
-  VkSemaphoreCreateInfo semaphoreInfo {};
-  semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-  for (size_t i = 0; i < swapchainImages_.size(); i++) {
-    if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS ||
-        vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS) {
-      V_FATAL("Failed to create synchronization semaphores");
-    }
-
-    VkFenceCreateInfo fenceInfo {};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-    if (vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS) {
-      V_FATAL("Failed to create synchronization fence");
-    }
-  }
+  CreateSyncObjects();
 
   // Setup debug messenger if validation layers are enabled
   if (!config_.enableValidationLayers) return;
@@ -433,17 +440,10 @@ void Core::Context::Init(const Config& config) {
 }
 
 Core::Context::~Context() {
-  for (size_t i = 0; i < swapchainImages_.size(); i++) {
-    vkDestroySemaphore(device_, imageAvailableSemaphores_[i], nullptr);
-    vkDestroySemaphore(device_, renderFinishedSemaphores_[i], nullptr);
-    vkDestroyFence(device_, inFlightFences_[i], nullptr);
-  }
-  
-  for (auto view : swapchainImageViews_)
-    vkDestroyImageView(device_, view, nullptr);
+  vkDeviceWaitIdle(device_);
 
-  if (swapchain_ != VK_NULL_HANDLE)
-    vkDestroySwapchainKHR(device_, swapchain_, nullptr);
+  CleanupSyncObjects();
+  CleanupSwapchain();
 
   for (const auto& [_, pool] : commandPools_)
     vkDestroyCommandPool(device_, pool, nullptr);
@@ -460,4 +460,14 @@ Core::Context::~Context() {
 
   if (instance_ != VK_NULL_HANDLE) 
     vkDestroyInstance(instance_, nullptr);
+}
+
+void Core::Context::HandleResize(uint32_t newWidth, uint32_t newHeight) {
+  vkDeviceWaitIdle(device_);
+
+  CleanupSyncObjects();
+  CleanupSwapchain();
+
+  CreateSwapchain();
+  CreateSyncObjects();
 }
