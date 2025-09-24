@@ -49,18 +49,9 @@ namespace Core {
 
           OnFramePre(dt);
 
-          SDL_GetWindowSize(context_.window_.Get(), &newWidth, &newHeight);
-          if (newWidth != oldWidth || newHeight != oldHeight) {
-            V_DEBUG("Window resized from {}x{} to {}x{}", oldWidth, oldHeight, newWidth, newHeight);
-
-            context_.needsResize_ = true;
-
-            oldWidth = newWidth;
-            oldHeight = newHeight;
-
-          }
-
           if (context_.needsResize_) {
+            V_DEBUG("Window resized");
+
             context_.HandleResize(newWidth, newHeight);
             renderManager_.HandleResize();
 

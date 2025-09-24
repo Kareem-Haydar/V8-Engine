@@ -242,7 +242,6 @@ void Renderer::Renderer::Render() {
 
   if (res == VK_ERROR_OUT_OF_DATE_KHR) {
     V_DEBUG("Swapchain out of date");
-    vkDeviceWaitIdle(context_->device_);
     context_->needsResize_ = true;
     return;
   } else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
@@ -302,7 +301,7 @@ void Renderer::Renderer::Render() {
   submitInfo.pCommandBuffers = &commandBuffers_[currentFrame_];
 
   VkSemaphore waitSemaphores[] = { context_->imageAvailableSemaphores_[currentFrame_] };
-  VkSemaphore signalSemaphores[] = { context_->renderFinishedSemaphores_[currentFrame_] };
+  VkSemaphore signalSemaphores[] = { context_->renderFinishedSemaphores_[imageIndex] };
   VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
   submitInfo.waitSemaphoreCount = 1;
   submitInfo.pWaitSemaphores = waitSemaphores;
@@ -325,7 +324,6 @@ void Renderer::Renderer::Render() {
   res = vkQueuePresentKHR(context_->presentQueue_, &presentInfo);
   if (res == VK_ERROR_OUT_OF_DATE_KHR) {
     V_DEBUG("Swapchain out of date (failed to present swapchain image)");
-    vkDeviceWaitIdle(context_->device_);
     context_->needsResize_ = true;
     return;
   } else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
@@ -353,4 +351,6 @@ void Renderer::Renderer::HandleResize() {
     if (vkCreateFramebuffer(context_->device_, &framebufferInfo, nullptr, &framebuffers_[i]) != VK_SUCCESS)
       V_FATAL("Failed to create framebuffer");
   }
+
+  currentFrame_ = 0;
 }
