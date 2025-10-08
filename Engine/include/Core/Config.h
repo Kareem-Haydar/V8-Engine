@@ -18,23 +18,21 @@
 
 #define CHOOSE_BEST_DEVICE -1
 
-namespace Core {
-  struct Config {
-    std::string appName;
-    uint32_t appVersion;
-    std::string engineName;
-    uint32_t engineVersion;
-    uint32_t apiVersion;
-    bool enableValidationLayers;
-    std::vector<const char*> validationLayers;
-    std::vector<const char*> deviceExtensions;
-    int physicalDeviceIndex = CHOOSE_BEST_DEVICE;
-    uint32_t windowWidth;
-    uint32_t windowHeight;
-    bool enableVSync;
-    bool fullscreen;
-    bool resizable;
-  };
+struct V8_CoreConfig {
+  std::string appName;
+  uint32_t appVersion;
+  std::string engineName;
+  uint32_t engineVersion;
+  uint32_t apiVersion;
+  bool enableValidationLayers;
+  std::vector<const char*> validationLayers;
+  std::vector<const char*> deviceExtensions;
+  int physicalDeviceIndex = CHOOSE_BEST_DEVICE;
+  uint32_t windowWidth;
+  uint32_t windowHeight;
+  bool enableVSync;
+  bool fullscreen;
+  bool resizable;
+};
 
-  extern Config defaultConfig;
-}
+extern V8_CoreConfig defaultConfig;

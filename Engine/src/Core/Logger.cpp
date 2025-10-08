@@ -1,10 +1,10 @@
 #include <Core/Logger.h>
 
-Core::Logger::Logger(std::ostream* out) : output_(out), isRunning_(true) {
-  logThread_ = std::thread(&Logger::ProcessQueue, this);
+V8_Logger::V8_Logger(std::ostream* out) : output_(out), isRunning_(true) {
+  logThread_ = std::thread(&V8_Logger::ProcessQueue, this);
 }
 
-Core::Logger::~Logger() {
+V8_Logger::~V8_Logger() {
   {
     std::lock_guard<std::mutex> lock(logMutex_);
     isRunning_ = false;
@@ -15,7 +15,7 @@ Core::Logger::~Logger() {
     logThread_.join();
 }
 
-void Core::Logger::ProcessQueue() {
+void V8_Logger::ProcessQueue() {
   while (true) {
     std::unique_lock<std::mutex> lock(logMutex_);
     logCondition_.wait(lock, [this] { return !logQueue_.empty() || !isRunning_; });
@@ -58,4 +58,4 @@ void Core::Logger::ProcessQueue() {
   }
 }
 
-Core::Logger Core::logger = Core::Logger(&std::clog);
+V8_Logger logger = V8_Logger(&std::clog);

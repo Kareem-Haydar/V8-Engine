@@ -4,28 +4,35 @@
 
 #include <unordered_map>
 
-namespace Renderer {
-  class RenderManager {
-    private:
-      Core::Context* context_;
-      std::unordered_map<uint32_t, Renderer> renderers_;
-      uint32_t nextId_ = 0;
+class V8_RenderManager {
+  private:
+    V8_Context* context_;
+    std::unordered_map<std::string, V8_Renderer> renderers_;
+    uint32_t nextId_ = 0;
 
-    public:
-      void Init(Core::Context* context) {
-        context_ = context;
-      }
+  public:
+    void Init(V8_Context* context) {
+      context_ = context;
+    }
 
-      void Shutdown() {
-        renderers_.clear();
-      }
+    void Shutdown() {
+      renderers_.clear();
+    }
 
-      uint32_t CreateRenderer(const char* vertexShaderPath, const char* fragmentShaderPath, const RenderPassDescription& renderPassDesc, const Config& config = defaultConfig);
-      void RemoveRenderer(uint32_t rendererId);
-      Renderer* GetRenderer(uint32_t rendererId);
-      void Render(uint32_t rendererId);
-      void RenderAll();
+    void CreateRenderer(const std::string& name, const char* vertexShaderPath, const char* fragmentShaderPath, const V8_RenderPassDescription& renderPassDesc, const V8_RenderConfig& config = defaultRenderConfig);
+    void RemoveRenderer(const std::string& name);
+    V8_Renderer* GetRenderer(const std::string& name);
+    void Render(const std::string& name);
+    void RenderAll();
+    void BindScene(const std::string& name, V8_Scene* scene) {
+      if (renderers_.find(name) != renderers_.end())
+        renderers_[name].BindScene(*scene);
+    }
 
-      void HandleResize();
-  };
-}
+    void UnbindScene(const std::string& name) {
+      if (renderers_.find(name) != renderers_.end())
+        renderers_[name].UnbindScene();
+    }
+
+    void HandleResize();
+};

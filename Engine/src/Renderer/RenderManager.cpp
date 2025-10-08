@@ -1,36 +1,34 @@
 #include <Renderer/RenderManager.h>
 
-uint32_t Renderer::RenderManager::CreateRenderer(const char* vertexShaderPath, const char* fragmentShaderPath, const RenderPassDescription& renderPassDesc, const Config& config) {
-  uint32_t id = nextId_++;
-  renderers_[id].Init(*context_, vertexShaderPath, fragmentShaderPath, renderPassDesc, config);
-  return id;
+void V8_RenderManager::CreateRenderer(const std::string& name, const char* vertexShaderPath, const char* fragmentShaderPath, const V8_RenderPassDescription& renderPassDesc, const V8_RenderConfig& config) {
+  renderers_[name].Init(*context_, vertexShaderPath, fragmentShaderPath, renderPassDesc, config);
 }
 
-Renderer::Renderer* Renderer::RenderManager::GetRenderer(uint32_t id) {
-  if (renderers_.find(id) == renderers_.end())
+V8_Renderer* V8_RenderManager::GetRenderer(const std::string& name) {
+  if (renderers_.find(name) == renderers_.end())
     return nullptr;
 
-  return &renderers_[id];
+  return &renderers_[name];
 }
 
-void Renderer::RenderManager::RemoveRenderer(uint32_t id) {
-  renderers_.erase(id);
+void V8_RenderManager::RemoveRenderer(const std::string& name) {
+  renderers_.erase(name);
 }
 
-void Renderer::RenderManager::Render(uint32_t id) {
+void V8_RenderManager::Render(const std::string& id) {
   if (context_->needsResize_) return;
 
   renderers_[id].Render();
 }
 
-void Renderer::RenderManager::RenderAll() {
+void V8_RenderManager::RenderAll() {
   if (context_->needsResize_) return;
 
   for (auto& [id, renderer] : renderers_)
     renderer.Render();
 }
 
-void Renderer::RenderManager::HandleResize() {
+void V8_RenderManager::HandleResize() {
   for (auto& [_, renderer] : renderers_)
     renderer.HandleResize();
 }

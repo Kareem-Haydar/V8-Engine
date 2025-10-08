@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-Core::Config Core::defaultConfig = {
+V8_CoreConfig defaultConfig = {
   .appName = "",
   .appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0),
   .engineName = "V8 Engine",

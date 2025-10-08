@@ -1,10 +1,10 @@
-#include <Renderer/VulkanTypes.h>
+#include <Renderer/Utils.h>
 
 #include <Core/Logger.h>
 
-void Renderer::RenderPass::Init(const Core::Context& context, const std::optional<RenderPassDescription>& description, const Config& config) {
+void V8_RenderPass::Init(const V8_Context& context, const std::optional<V8_RenderPassDescription>& description, const V8_RenderConfig& config) {
   if (!description.has_value())
-    description_ = RenderPassDescription::DefaultDescription(context.swapchainImageFormat_, static_cast<VkSampleCountFlagBits>(config.sampleCount));
+    description_ = V8_RenderPassDescription::DefaultDescription(context.swapchainImageFormat_, static_cast<VkSampleCountFlagBits>(config.sampleCount));
   else
     description_ = description.value();
 
@@ -23,7 +23,7 @@ void Renderer::RenderPass::Init(const Core::Context& context, const std::optiona
   device_ = context.device_;
 }
 
-Renderer::RenderPass::~RenderPass() {
+V8_RenderPass::~V8_RenderPass() {
   if (renderPass_ != VK_NULL_HANDLE)
     vkDestroyRenderPass(device_, renderPass_, nullptr);
 }

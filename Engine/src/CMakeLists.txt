@@ -1,7 +1,6 @@
 set(SRC 
   Renderer/Config.cpp
   Renderer/RenderPass.cpp
-  #Renderer/Pipeline.cpp
   Renderer/Semaphore.cpp
   Renderer/Fence.cpp
   Renderer/CommandBuffer.cpp
@@ -10,6 +9,7 @@ set(SRC
   Core/Logger.cpp
   Core/Config.cpp
   Core/Context.cpp
+  Scene/Mesh.cpp
 )
 
 add_library(V8-lib SHARED ${SRC})

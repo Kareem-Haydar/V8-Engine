@@ -1,4 +1,5 @@
 #include <Renderer/Renderer.h>
+#include <Scene/Types.h>
 
 #include <fstream>
 #include <vector>
@@ -20,10 +21,10 @@ std::vector<char> ReadFile(const std::string& filename) {
   return buffer;
 }
 
-void Renderer::Renderer::Init(Core::Context& ctx, const char* vertexShaderPath, const char* fragmentShaderPath, const std::optional<RenderPassDescription>& renderPassDesc, const Config& config) {
+void V8_Renderer::V8_Renderer::Init(V8_Context& ctx, const char* vertexShaderPath, const char* fragmentShaderPath, const std::optional<V8_RenderPassDescription>& renderPassDesc, const V8_RenderConfig& config) {
   context_ = &ctx;
 
-  RenderPassDescription desc = renderPassDesc.value_or(RenderPassDescription::Default(context_->swapchainImageFormat_, config));
+  V8_RenderPassDescription desc = renderPassDesc.value_or(V8_RenderPassDescription::Default(context_->swapchainImageFormat_, config));
 
   VkRenderPassCreateInfo renderPassInfo {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -83,12 +84,15 @@ void Renderer::Renderer::Init(Core::Context& ctx, const char* vertexShaderPath, 
 
   VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+  auto vertexBindingDescription = V8_Vertex::GetBindingDescription();
+  auto vertexAttributeDescriptions = V8_Vertex::GetAttributeDescriptions();
+
   VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputInfo.vertexBindingDescriptionCount = 0;
-  vertexInputInfo.pVertexBindingDescriptions = nullptr;
-  vertexInputInfo.vertexAttributeDescriptionCount = 0;
-  vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+  vertexInputInfo.vertexBindingDescriptionCount = 1;
+  vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDescription;
+  vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
+  vertexInputInfo.pVertexAttributeDescriptions = vertexAttributeDescriptions.data();
 
   VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo {};
   inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -212,7 +216,7 @@ void Renderer::Renderer::Init(Core::Context& ctx, const char* vertexShaderPath, 
   }
 }
 
-Renderer::Renderer::~Renderer() {
+V8_Renderer::V8_Renderer::~V8_Renderer() {
   vkDeviceWaitIdle(context_->device_);
 
   for (auto framebuffer : framebuffers_)
@@ -226,9 +230,16 @@ Renderer::Renderer::~Renderer() {
 
   if (renderPass_ != VK_NULL_HANDLE)
     vkDestroyRenderPass(context_->device_, renderPass_, nullptr);
+
+  scene_ = nullptr;
 }
 
-void Renderer::Renderer::Render() {
+void V8_Renderer::V8_Renderer::Render() {
+  if (scene_ == nullptr) {
+    V_WARNING("No scene bound to renderer");
+    return;
+  }
+
   if (context_->needsResize_) {
     V_DEBUG("Swapchain out of date");
     vkDeviceWaitIdle(context_->device_);
@@ -288,7 +299,19 @@ void Renderer::Renderer::Render() {
   scissor.extent = context_->swapchainExtent_;
   vkCmdSetScissor(commandBuffers_[currentFrame_], 0, 1, &scissor);
 
-  vkCmdDraw(commandBuffers_[currentFrame_], 3, 1, 0, 0);
+  for (auto& e : scene_->registry.entities_) {
+    if (scene_->registry.GetComponent<V8_StaticMesh>(e) == nullptr)
+      continue;
+
+    V8_StaticMesh* mesh = scene_->registry.GetComponent<V8_StaticMesh>(e);
+
+    VkBuffer vertexBuffers[] = { mesh->vertexBuffer };
+    VkDeviceSize offsets[] = { 0 };
+
+    vkCmdBindVertexBuffers(commandBuffers_[currentFrame_], 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(commandBuffers_[currentFrame_], static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
+  }
 
   vkCmdEndRenderPass(commandBuffers_[currentFrame_]);
 
@@ -333,7 +356,7 @@ void Renderer::Renderer::Render() {
   currentFrame_ = (currentFrame_ + 1) % context_->swapchainImages_.size();
 }
 
-void Renderer::Renderer::HandleResize() {
+void V8_Renderer::V8_Renderer::HandleResize() {
   for (auto& fb : framebuffers_)
     vkDestroyFramebuffer(context_->device_, fb, nullptr);
 

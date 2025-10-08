@@ -1,4 +1,4 @@
-#include <Renderer/VulkanTypes.h>
+#include <Renderer/Types.h>
 
 #include <Core/Logger.h>
 
@@ -21,7 +21,7 @@ std::vector<char> ReadFile(const std::string& filename) {
   return buffer;
 }
 
-void Renderer::Shader::Init(const Core::Context& context, VkShaderStageFlagBits type, const char* path) {
+void V8_Shader::Init(const V8_Context& context, VkShaderStageFlagBits type, const char* path) {
   std::vector<char> code = ReadFile(path);
 
   VkShaderModuleCreateInfo createInfo {};
@@ -40,21 +40,21 @@ void Renderer::Shader::Init(const Core::Context& context, VkShaderStageFlagBits 
   device_ = context.device_;
 }
 
-Renderer::Shader::~Shader() {
+V8_Shader::~V8_Shader() {
   if (shaderModule_ != VK_NULL_HANDLE)
     vkDestroyShaderModule(device_, shaderModule_, nullptr);
 }
 
-void Renderer::Pipeline::Init(const Core::Context& context, const GraphicsPipelineDescription& description, const Config& config) {
-VkPipelineDynamicStateCreateInfo dynamicStateInfo = {};
-VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
-VkPipelineViewportStateCreateInfo viewportInfo = {};
-VkPipelineRasterizationStateCreateInfo rasterizerInfo = {};
-VkPipelineMultisampleStateCreateInfo multisampleInfo = {};
-VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-VkPipelineColorBlendStateCreateInfo colorBlendingInfo = {};
-VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
+void V8_Pipeline::Init(const V8_Context& context, const GraphicsPipelineDescription& description, const V8_RenderConfig& config) {
+  VkPipelineDynamicStateCreateInfo dynamicStateInfo = {};
+  VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+  VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
+  VkPipelineViewportStateCreateInfo viewportInfo = {};
+  VkPipelineRasterizationStateCreateInfo rasterizerInfo = {};
+  VkPipelineMultisampleStateCreateInfo multisampleInfo = {};
+  VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+  VkPipelineColorBlendStateCreateInfo colorBlendingInfo = {};
+  VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 
   VkPipelineShaderStageCreateInfo shaderStages[] = { description.vertexShader->stageInfo, description.fragmentShader->stageInfo };
 
@@ -146,7 +146,7 @@ VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
   device_ = context.device_;
 }
 
-Renderer::Pipeline::~Pipeline() {
+V8_Pipeline::~V8_Pipeline() {
   if (pipelineLayout_ != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(device_, pipelineLayout_, nullptr);
 

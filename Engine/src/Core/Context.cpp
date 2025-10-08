@@ -2,6 +2,9 @@
 
 #include <set>
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+
 struct QueueFamilyIndices {
   int graphicsFamily = -1;
   int presentFamily = -1;
@@ -198,7 +201,7 @@ void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
   createInfo.pfnUserCallback = DebugCallback;
 }
 
-void Core::Context::CreateSwapchain() {
+void V8_Context::CreateSwapchain() {
   SwapchainSupportDetails swapchainSupport = QuerySwapchainSupport(physicalDevice_, surface_);
   VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);
   VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes, config_.enableVSync);
@@ -235,8 +238,7 @@ void Core::Context::CreateSwapchain() {
   swapchainCreateInfo.clipped = VK_TRUE;
   swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-  if (vkCreateSwapchainKHR(device_, &swapchainCreateInfo, nullptr, &swapchain_) != VK_SUCCESS) 
-    V_FATAL("Failed to create swapchain");
+  VK_CHECK(vkCreateSwapchainKHR(device_, &swapchainCreateInfo, nullptr, &swapchain_));
 
   swapchainImageFormat_ = surfaceFormat.format;
   swapchainExtent_ = extent;
@@ -266,12 +268,11 @@ void Core::Context::CreateSwapchain() {
     viewCreateInfo.subresourceRange.baseArrayLayer = 0;
     viewCreateInfo.subresourceRange.layerCount = 1;
 
-    if (vkCreateImageView(device_, &viewCreateInfo, nullptr, &swapchainImageViews_[i]) != VK_SUCCESS) 
-      V_FATAL("Failed to create image views for swapchain images");
+    VK_CHECK(vkCreateImageView(device_, &viewCreateInfo, nullptr, &swapchainImageViews_[i]));
   }
 }
 
-void Core::Context::CreateSyncObjects() {
+void V8_Context::CreateSyncObjects() {
   imageAvailableSemaphores_.resize(swapchainImages_.size());
   renderFinishedSemaphores_.resize(swapchainImages_.size());
   inFlightFences_.resize(swapchainImages_.size());
@@ -284,15 +285,13 @@ void Core::Context::CreateSyncObjects() {
   fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
   for (size_t i = 0; i < swapchainImages_.size(); i++) {
-    if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS ||
-        vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS ||
-        vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS) {
-      V_FATAL("Failed to create synchronization objects for a frame");
-    }
+    VK_CHECK(vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]));
+    VK_CHECK(vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]));
+    VK_CHECK(vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]));
   }
 }
 
-void Core::Context::Init(const Config& config) {
+void V8_Context::Init(const V8_CoreConfig& config) {
   config_ = config;
 
   // Initialize the window
@@ -343,8 +342,7 @@ void Core::Context::Init(const Config& config) {
     instanceInfo.enabledLayerCount = 0;
   }
 
-  if (vkCreateInstance(&instanceInfo, nullptr, &instance_) != VK_SUCCESS) 
-    V_FATAL("Failed to create Vulkan instance");
+  VK_CHECK(vkCreateInstance(&instanceInfo, nullptr, &instance_));
 
   V_INFO("Vulkan instance created successfully.");
 
@@ -406,11 +404,17 @@ void Core::Context::Init(const Config& config) {
   deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
   deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-  if (vkCreateDevice(physicalDevice_, &deviceCreateInfo, nullptr, &device_) != VK_SUCCESS) 
-    V_FATAL("Failed to create logical device");
+  VK_CHECK(vkCreateDevice(physicalDevice_, &deviceCreateInfo, nullptr, &device_));
 
   vkGetDeviceQueue(device_, graphicsQueueFamilyIndex_, 0, &graphicsQueue_);
   vkGetDeviceQueue(device_, presentQueueFamilyIndex_, 0, &presentQueue_);
+
+  VmaAllocatorCreateInfo allocatorInfo {};
+  allocatorInfo.physicalDevice = physicalDevice_;
+  allocatorInfo.device = device_;
+  allocatorInfo.instance = instance_;
+
+  VK_CHECK(vmaCreateAllocator(&allocatorInfo, &allocator_));
 
   // Create command pools
   commandPools_.reserve(uniqueQueueFamilies.size());
@@ -420,8 +424,7 @@ void Core::Context::Init(const Config& config) {
     poolInfo.queueFamilyIndex = queueFamily;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    if (vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPools_[queueFamily]) != VK_SUCCESS) 
-      V_FATAL("Failed to create command pool");
+    VK_CHECK(vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPools_[queueFamily]));
   }
 
   // Create swapchain
@@ -435,11 +438,11 @@ void Core::Context::Init(const Config& config) {
 
   VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo {};
   PopulateDebugMessengerCreateInfo(debugCreateInfo);
-  if (CreateDebugUtilsMessengerEXT(instance_, &debugCreateInfo, nullptr, &debugMessenger_) != VK_SUCCESS) 
-    V_FATAL("Failed to set up debug messenger");
+
+  VK_CHECK(CreateDebugUtilsMessengerEXT(instance_, &debugCreateInfo, nullptr, &debugMessenger_));
 }
 
-Core::Context::~Context() {
+V8_Context::~V8_Context() {
   vkDeviceWaitIdle(device_);
 
   CleanupSyncObjects();
@@ -448,6 +451,7 @@ Core::Context::~Context() {
   for (const auto& [_, pool] : commandPools_)
     vkDestroyCommandPool(device_, pool, nullptr);
   
+  vmaDestroyAllocator(allocator_);
 
   if (device_ != VK_NULL_HANDLE) 
     vkDestroyDevice(device_, nullptr);
@@ -462,7 +466,7 @@ Core::Context::~Context() {
     vkDestroyInstance(instance_, nullptr);
 }
 
-void Core::Context::HandleResize(uint32_t newWidth, uint32_t newHeight) {
+void V8_Context::HandleResize(uint32_t newWidth, uint32_t newHeight) {
   vkDeviceWaitIdle(device_);
 
   CleanupSyncObjects();

@@ -1,76 +1,74 @@
 #pragma once
 
-#include <Core/Context.h>
 #include <Renderer/RenderManager.h>
+#include <Core/Context.h>
 
 #include <SDL2/SDL.h>
 
-namespace Core {
-  class Application {
-    protected:
-      Core::Config config_ = Core::defaultConfig;
-      Core::Context context_;
+class V8_Application {
+  protected:
+    V8_CoreConfig config_ = defaultConfig;
+    V8_Context context_;
 
-      Renderer::RenderManager renderManager_;
+    V8_RenderManager renderManager_;
 
-      virtual void OnInitPre() {}
-      virtual void OnInitPost() {}
-      virtual void OnRawEvent(SDL_Event& e) {}
-      virtual void OnFramePre(double dt) {}
-      virtual void OnFramePost(double dt) {}
-      virtual void OnShutdown() {}
+    virtual void OnInitPre() {}
+    virtual void OnInitPost() {}
+    virtual void OnRawEvent(SDL_Event& e) {}
+    virtual void OnFramePre(double dt) {}
+    virtual void OnFramePost(double dt) {}
+    virtual void OnShutdown() {}
 
-      virtual void InitDefaultResources() {
-      if (SDL_Init(SDL_INIT_VIDEO) != 0) 
-        V_FATAL("Failed to initialize SDL video subsystem: {}", SDL_GetError());
+    virtual void InitDefaultResources() {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) 
+      V_FATAL("Failed to initialize SDL video subsystem: {}", SDL_GetError());
 
-        context_.Init(config_);
-        renderManager_.Init(&context_);
-      }
+      context_.Init(config_);
+      renderManager_.Init(&context_);
+    }
 
-    public:
-      void Run() {
-        OnInitPre();
-        InitDefaultResources();
-        OnInitPost();
+  public:
+    void Run() {
+      OnInitPre();
+      InitDefaultResources();
+      OnInitPost();
 
-        int oldWidth, oldHeight;
-        int newWidth, newHeight;
+      int oldWidth, oldHeight;
+      int newWidth, newHeight;
 
-        SDL_GetWindowSize(context_.window_.Get(), &oldWidth, &oldHeight);
-        SDL_GetWindowSize(context_.window_.Get(), &newWidth, &newHeight);
-        
-        bool running = true;
-        Uint64 lastTime = SDL_GetPerformanceCounter();
-        while (running) {
-          Uint64 currentTime = SDL_GetPerformanceCounter();
-          double dt = (currentTime - lastTime) / (double)SDL_GetPerformanceFrequency();
-          lastTime = currentTime;
+      SDL_GetWindowSize(context_.window_.Get(), &oldWidth, &oldHeight);
+      SDL_GetWindowSize(context_.window_.Get(), &newWidth, &newHeight);
 
-          OnFramePre(dt);
+      bool running = true;
+      Uint64 lastTime = SDL_GetPerformanceCounter();
+      while (running) {
+        Uint64 currentTime = SDL_GetPerformanceCounter();
+        double dt = (currentTime - lastTime) / (double)SDL_GetPerformanceFrequency();
+        lastTime = currentTime;
 
-          if (context_.needsResize_) {
-            V_DEBUG("Window resized");
+        OnFramePre(dt);
 
-            context_.HandleResize(newWidth, newHeight);
-            renderManager_.HandleResize();
+        if (context_.needsResize_) {
+          V_DEBUG("Window resized");
 
-            context_.needsResize_ = false;
-          } else {
-            renderManager_.RenderAll();
-          }
+          context_.HandleResize(newWidth, newHeight);
+          renderManager_.HandleResize();
 
-          SDL_Event e;
-          while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT)  running = false;
-
-            OnRawEvent(e);
-          }
-
-          OnFramePost(dt);
+          context_.needsResize_ = false;
+        } else {
+          renderManager_.RenderAll();
         }
 
-        OnShutdown();
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+          if (e.type == SDL_QUIT)  running = false;
+
+          OnRawEvent(e);
+        }
+
+        OnFramePost(dt);
       }
-  };
-}
+
+      OnShutdown();
+    }
+};

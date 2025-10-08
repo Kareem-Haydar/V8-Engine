@@ -3,26 +3,26 @@
 
 #include <string>
 
-Renderer::Config Renderer::defaultConfig = {
-  .polygonMode = Renderer::Config::PolygonMode::Fill,
-  .cullMode = Renderer::Config::CullMode::CullModeNone,
-  .frontFace = Renderer::Config::FrontFace::Clockwise,
+V8_RenderConfig defaultRenderConfig = {
+  .polygonMode = V8_RenderConfig::PolygonMode::Fill,
+  .cullMode = V8_RenderConfig::CullMode::CullModeNone,
+  .frontFace = V8_RenderConfig::FrontFace::Clockwise,
   .depthClampEnable = false,
   .rasterDiscardEnable = false,
   .primitiveRestartEnable = false,
   .lineWidth = 1.0f,
-  .sampleCount = Renderer::Config::SampleCount::SampleCountOne,
+  .sampleCount = V8_RenderConfig::SampleCount::SampleCountOne,
   .sampleShadingEnable = false,
   .minSampleShading = 0.0f,
   .blendEnable = false,
-  .srcColorBlendFactor = Renderer::Config::BlendFactor::BlendFactorOne,
-  .dstColorBlendFactor = Renderer::Config::BlendFactor::BlendFactorZero,
-  .colorBlendOp = Renderer::Config::BlendOp::BlendOpAdd,
-  .srcAlphaBlendFactor = Renderer::Config::BlendFactor::BlendFactorOne,
-  .dstAlphaBlendFactor = Renderer::Config::BlendFactor::BlendFactorZero,
-  .alphaBlendOp = Renderer::Config::BlendOp::BlendOpAdd,
-  .dynamicStates = { Renderer::Config::DynamicState::Viewport, Renderer::Config::DynamicState::Scissor },
-  .inputTopology = Renderer::Config::InputTopology::TriangleList,
+  .srcColorBlendFactor = V8_RenderConfig::BlendFactor::BlendFactorOne,
+  .dstColorBlendFactor = V8_RenderConfig::BlendFactor::BlendFactorZero,
+  .colorBlendOp = V8_RenderConfig::BlendOp::BlendOpAdd,
+  .srcAlphaBlendFactor = V8_RenderConfig::BlendFactor::BlendFactorOne,
+  .dstAlphaBlendFactor = V8_RenderConfig::BlendFactor::BlendFactorZero,
+  .alphaBlendOp = V8_RenderConfig::BlendOp::BlendOpAdd,
+  .dynamicStates = { V8_RenderConfig::DynamicState::Viewport, V8_RenderConfig::DynamicState::Scissor },
+  .inputTopology = V8_RenderConfig::InputTopology::TriangleList,
   .validationLayers = { "VK_LAYER_KHRONOS_validation" },
   .appName = "",
   .appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0),
@@ -31,7 +31,7 @@ Renderer::Config Renderer::defaultConfig = {
   .apiVersion = VK_API_VERSION_1_3
 };
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::DebugCallback(
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,

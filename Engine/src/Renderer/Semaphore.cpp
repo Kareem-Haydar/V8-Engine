@@ -1,7 +1,7 @@
-#include <Renderer/VulkanTypes.h>
+#include <Renderer/Utils.h>
 #include <Core/Logger.h>
 
-void Renderer::Semaphore::Init(const Core::Context& context) {
+void V8_Semaphore::Init(const V8_Context& context) {
   device_ = context.device_;
 
   VkSemaphoreCreateInfo semaphoreInfo{};
@@ -11,7 +11,7 @@ void Renderer::Semaphore::Init(const Core::Context& context) {
     V_FATAL("Failed to create semaphore");
 }
 
-Renderer::Semaphore::~Semaphore() {
+V8_Semaphore::~V8_Semaphore() {
   if (semaphore_ != VK_NULL_HANDLE) {
     vkDestroySemaphore(device_, semaphore_, nullptr);
     semaphore_ = VK_NULL_HANDLE;

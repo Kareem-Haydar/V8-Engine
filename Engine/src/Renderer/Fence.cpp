@@ -1,7 +1,7 @@
-#include <Renderer/VulkanTypes.h>
+#include <Renderer/Utils.h>
 #include <Core/Logger.h>
 
-void Renderer::Fence::Init(const Core::Context& context, bool signaled) {
+void V8_Fence::Init(const V8_Context& context, bool signaled) {
   device_ = context.device_;
 
   VkFenceCreateInfo fenceInfo = {};
@@ -12,7 +12,7 @@ void Renderer::Fence::Init(const Core::Context& context, bool signaled) {
     V_FATAL("Failed to create fence");
 }
 
-Renderer::Fence::~Fence() {
+V8_Fence::~V8_Fence() {
   if (fence_ != VK_NULL_HANDLE) {
     vkDestroyFence(device_, fence_, nullptr);
     fence_ = VK_NULL_HANDLE;
