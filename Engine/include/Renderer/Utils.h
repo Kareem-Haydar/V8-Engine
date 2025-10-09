@@ -4,7 +4,7 @@
 #include <Renderer/Config.h>
 
 #include <vulkan/vulkan.h>
-#include <functional>
+#include <vk_mem_alloc.h>
 #include <optional>
 
 struct V8_RenderPass;
@@ -164,19 +164,9 @@ struct V8_Fence {
     ~V8_Fence();
 };
 
-struct V8_DeletionQueue {
-  private:
-    static std::vector<std::function<void()>> deleters_;
+struct V8_UBOBase {
+  VkBuffer buffer_ = VK_NULL_HANDLE;
+  VmaAllocation allocation_ = VK_NULL_HANDLE;
 
-  public:
-    static void Add(std::function<void()> deleter) {
-      deleters_.push_back(deleter);
-    }
-
-    static void Flush() {
-      for (auto& deleter : deleters_)
-        deleter();
-
-      deleters_.clear();
-    }
+  size_t size_ = 0;
 };

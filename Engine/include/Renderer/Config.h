@@ -66,40 +66,47 @@ struct V8_RenderConfig {
     BlendOpSubtract = VK_BLEND_OP_SUBTRACT
   };
 
- PolygonMode polygonMode;
- CullMode cullMode;
- FrontFace frontFace;
- bool depthClampEnable;
- bool rasterDiscardEnable;
- bool primitiveRestartEnable;
- bool depthBiasEnable;
- float lineWidth;
+  enum class DescriptorStage {
+    Vertex = VK_SHADER_STAGE_VERTEX_BIT,
+    Fragment = VK_SHADER_STAGE_FRAGMENT_BIT,
+    Compute = VK_SHADER_STAGE_COMPUTE_BIT
+  };
 
- SampleCount sampleCount;
- bool sampleShadingEnable;
- float minSampleShading;
+  PolygonMode polygonMode;
+  CullMode cullMode;
+  FrontFace frontFace;
+  bool depthClampEnable;
+  bool rasterDiscardEnable;
+  bool primitiveRestartEnable;
+  bool depthBiasEnable;
+  float lineWidth;
 
- bool blendEnable;
- BlendFactor srcColorBlendFactor;
- BlendFactor dstColorBlendFactor;
- BlendOp colorBlendOp;
- BlendFactor srcAlphaBlendFactor;
- BlendFactor dstAlphaBlendFactor;
- BlendOp alphaBlendOp;
+  SampleCount sampleCount;
+  bool sampleShadingEnable;
+  float minSampleShading;
 
- std::vector<DynamicState> dynamicStates;
+  bool blendEnable;
+  BlendFactor srcColorBlendFactor;
+  BlendFactor dstColorBlendFactor;
+  BlendOp colorBlendOp;
+  BlendFactor srcAlphaBlendFactor;
+  BlendFactor dstAlphaBlendFactor;
+  BlendOp alphaBlendOp;
 
- InputTopology inputTopology;
+  std::vector<DynamicState> dynamicStates;
 
- std::vector<const char*> validationLayers = {};
+  InputTopology inputTopology;
+  DescriptorStage descriptorStage;
 
- const char* appName;
- uint32_t appVersion;
+  std::vector<const char*> validationLayers = {};
 
- const char* engineName;
- uint32_t engineVersion;
+  const char* appName;
+  uint32_t appVersion;
 
- uint32_t apiVersion;
+  const char* engineName;
+  uint32_t engineVersion;
+
+  uint32_t apiVersion;
 };
 
 extern V8_RenderConfig defaultRenderConfig;

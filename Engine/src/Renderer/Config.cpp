@@ -23,6 +23,7 @@ V8_RenderConfig defaultRenderConfig = {
   .alphaBlendOp = V8_RenderConfig::BlendOp::BlendOpAdd,
   .dynamicStates = { V8_RenderConfig::DynamicState::Viewport, V8_RenderConfig::DynamicState::Scissor },
   .inputTopology = V8_RenderConfig::InputTopology::TriangleList,
+  .descriptorStage = V8_RenderConfig::DescriptorStage::Vertex,
   .validationLayers = { "VK_LAYER_KHRONOS_validation" },
   .appName = "",
   .appVersion = VK_MAKE_API_VERSION(0, 1, 0, 0),

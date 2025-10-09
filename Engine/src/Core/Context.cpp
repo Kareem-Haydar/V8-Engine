@@ -165,6 +165,8 @@ uint32_t RatePhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR surface) {
   // Maximum possible size of textures affects graphics quality
   score += deviceProperties.limits.maxImageDimension2D;
 
+  V_DEBUG("max push constant size: {}", deviceProperties.limits.maxPushConstantsSize);
+
   QueueFamilyIndices indices = FindQueueFamilies(device, surface);
   if (!indices.Complete()) return 0;
 

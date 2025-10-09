@@ -38,6 +38,20 @@ void V8_Renderer::V8_Renderer::Init(V8_Context& ctx, const char* vertexShaderPat
   if (vkCreateRenderPass(context_->device_, &renderPassInfo, nullptr, &renderPass_) != VK_SUCCESS)
     V_FATAL("Failed to create render pass");
 
+  VkDescriptorSetLayoutBinding descriptorBinding {};
+  descriptorBinding.binding = 0;
+  descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  descriptorBinding.descriptorCount = 1;
+  descriptorBinding.stageFlags = static_cast<VkShaderStageFlagBits>(config.descriptorStage);
+  descriptorBinding.pImmutableSamplers = nullptr;
+
+  VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo {};
+  descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  descriptorLayoutInfo.bindingCount = 1;
+  descriptorLayoutInfo.pBindings = &descriptorBinding;
+
+  VK_CHECK(vkCreateDescriptorSetLayout(context_->device_, &descriptorLayoutInfo, nullptr, &descriptorSetLayout_));
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipelineLayoutInfo.setLayoutCount = 0;
@@ -45,8 +59,7 @@ void V8_Renderer::V8_Renderer::Init(V8_Context& ctx, const char* vertexShaderPat
   pipelineLayoutInfo.pushConstantRangeCount = 0;
   pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-  if (vkCreatePipelineLayout(context_->device_, &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS)
-    V_FATAL("Failed to create pipeline layout");
+  VK_CHECK(vkCreatePipelineLayout(context_->device_, &pipelineLayoutInfo, nullptr, &pipelineLayout_));
 
   std::vector<char> vertShaderCode = ReadFile(vertexShaderPath);
   std::vector<char> fragShaderCode = ReadFile(fragmentShaderPath);
@@ -182,8 +195,7 @@ void V8_Renderer::V8_Renderer::Init(V8_Context& ctx, const char* vertexShaderPat
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
   pipelineInfo.pDynamicState = &dynamicStateInfo;
 
-  if (vkCreateGraphicsPipelines(context_->device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_) != VK_SUCCESS)
-    V_FATAL("Failed to create graphics pipeline");
+  VK_CHECK(vkCreateGraphicsPipelines(context_->device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_));
 
   vkDestroyShaderModule(context_->device_, vertShaderModule, nullptr);
   vkDestroyShaderModule(context_->device_, fragShaderModule, nullptr);
@@ -218,6 +230,8 @@ void V8_Renderer::V8_Renderer::Init(V8_Context& ctx, const char* vertexShaderPat
 
 V8_Renderer::V8_Renderer::~V8_Renderer() {
   vkDeviceWaitIdle(context_->device_);
+
+  vkDestroyDescriptorSetLayout(context_->device_, descriptorSetLayout_, nullptr);
 
   for (auto framebuffer : framebuffers_)
     vkDestroyFramebuffer(context_->device_, framebuffer, nullptr);
@@ -308,9 +322,12 @@ void V8_Renderer::V8_Renderer::Render() {
     VkBuffer vertexBuffers[] = { mesh->vertexBuffer };
     VkDeviceSize offsets[] = { 0 };
 
-    vkCmdBindVertexBuffers(commandBuffers_[currentFrame_], 0, 1, vertexBuffers, offsets);
+    VkBuffer indexBuffers[] = { mesh->indexBuffer };
 
-    vkCmdDraw(commandBuffers_[currentFrame_], static_cast<uint32_t>(mesh->vertices.size()), 1, 0, 0);
+    vkCmdBindVertexBuffers(commandBuffers_[currentFrame_], 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(commandBuffers_[currentFrame_], mesh->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdDrawIndexed(commandBuffers_[currentFrame_], static_cast<uint32_t>(mesh->indices.size()), 1, 0, 0, 0);
   }
 
   vkCmdEndRenderPass(commandBuffers_[currentFrame_]);

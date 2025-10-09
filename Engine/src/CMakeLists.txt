@@ -6,6 +6,7 @@ set(SRC
   Renderer/CommandBuffer.cpp
   Renderer/Renderer.cpp
   Renderer/RenderManager.cpp
+  Renderer/UBO.cpp
   Core/Logger.cpp
   Core/Config.cpp
   Core/Context.cpp

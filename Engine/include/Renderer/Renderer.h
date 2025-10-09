@@ -56,6 +56,8 @@ class V8_Renderer {
     VkRenderPass renderPass_ = VK_NULL_HANDLE;
     VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
     VkPipeline pipeline_ = VK_NULL_HANDLE;
+    VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
+
     std::vector<VkCommandBuffer> commandBuffers_;
 
     std::vector<VkFramebuffer> framebuffers_;
